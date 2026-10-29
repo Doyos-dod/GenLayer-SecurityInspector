@@ -11,6 +11,7 @@ Severity Breakdown
 Analyzer Protection
 Risk Classification
 Security Rules
+
 SEC001 Runtime Dependency
 
 SEC002 Cross Contract Call
