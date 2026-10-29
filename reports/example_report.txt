@@ -1,0 +1,66 @@
+  "========================================
+       GENLAYER SECURITY REPORT
+       Security Score : 70 Risk Level
+     : MEDIUMnTotal Findings : 4
+	 ========================================
+	 ========================================
+	 EXECUTIVE SUMMARY
+	 ========================================
+	 
+	 High Risk Findings   : 1
+	 Medium Risk Findings : 0
+	 Low Risk Findings    : 0
+	 Info Findings        : 3
+	 Audit Engine Version : 0.1
+	 ========================================
+	 ========================================
+	 INFO
+	 Issue:Runtime Dependency
+	 Explanation:
+	 The contract relies on a specific runtime dependency package.
+	 Impact:Runtime upgrades, compatibility changes, or dependency updates may affect contract behaviour and execution.
+	 Recommendation:Review dependency requirements and verify contract compatibility after runtime upgrades.
+	 ========================================
+	 ========================================
+	 HIGH RISK
+	 Issue:Missing Access Control
+	 Explanation:
+	 A public write method was detected but no owner or admin validation was found.
+	 Impact:
+	 Unauthorized users may be able to modify the contract state.
+	 Recommendation:
+	 Add owner or admin validation before allowing state changes.
+	 Example:
+	 if caller != self.owner:
+	 raise Exception('Unauthorized')
+	 or
+	 if caller != self.admin:
+	 raise Exception('Unauthorized')
+	 ========================================
+	 ========================================
+	 INFO
+	 Issue:
+	 LLM Usage Detected
+	 Explanation:
+	 The contract uses a Large Language Model.
+	 Impact:
+	 Outputs may vary depending on prompts,
+	 model versions and execution context.
+	 Recommendation:
+	 Validate AI generated responses before
+	 using them in important decisions.
+	 ========================================
+	 ========================================
+	 INFO
+	 Issue:
+	 Prompt Execution Detected
+	 Explanation:
+	 The contract sends prompts to an AI model.
+	 
+	 Impact:
+	 Different prompts may produce different
+	 results and behaviours.
+	 nRecommendation:
+	 Review prompts regularly and validate
+	 generated outputs.
+	 ========================================"
