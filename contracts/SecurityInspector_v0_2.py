@@ -44,7 +44,6 @@ class SecurityInspector(gl.Contract):
         # Analyzer Protection
         #
         if len(source_code) > 50000:
-
             self.high_count = u256(1)
             self.medium_count = u256(0)
             self.low_count = u256(0)
@@ -79,14 +78,12 @@ class SecurityInspector(gl.Contract):
                 "Recommendation:\n"
                 "Reduce source code size before analysis.\n"
             )
-
             return
 
         #
         # SEC001 Runtime Dependency
         #
         if "Depends" in source_code:
-
             findings += 1
             info_count += 1
 
@@ -118,7 +115,6 @@ class SecurityInspector(gl.Contract):
             "gl.call(" in source_code or
             "gl.send(" in source_code
         ):
-
             score -= 5
             findings += 1
             info_count += 1
@@ -146,7 +142,6 @@ class SecurityInspector(gl.Contract):
         # SEC003 Nondeterministic Execution
         #
         if "gl.vm.run_nondet_default" in source_code:
-
             score -= 5
             findings += 1
             info_count += 1
@@ -174,7 +169,6 @@ class SecurityInspector(gl.Contract):
         # SEC004 Timestamp Dependency
         #
         if "now(" in source_code:
-
             score -= 10
             findings += 1
             low_count += 1
@@ -202,7 +196,6 @@ class SecurityInspector(gl.Contract):
         # SEC005 Transaction Time Dependency
         #
         if "created(" in source_code:
-
             score -= 10
             findings += 1
             low_count += 1
@@ -229,7 +222,6 @@ class SecurityInspector(gl.Contract):
         # SEC006 Unbounded Storage Growth
         #
         if "self.trail +=" in source_code:
-
             score -= 20
             findings += 1
             medium_count += 1
@@ -298,8 +290,7 @@ class SecurityInspector(gl.Contract):
                 "allowing state changes.\n\n"
                 "Example:\n"
                 "if caller != self.owner:\n"
-                "    raise Exception('Unauthorized')\n"
-                "or\n\n"
+                "    raise Exception('Unauthorized')\nor\n\n"
                 "if caller != self.admin:\n"
                 "    raise Exception('Unauthorized')\n"
                 "========================================\n"
@@ -309,7 +300,6 @@ class SecurityInspector(gl.Contract):
         # SEC008 External Web Access
         #
         if "gl.nondet.web.get(" in source_code:
-
             findings += 1
             info_count += 1
 
@@ -333,7 +323,6 @@ class SecurityInspector(gl.Contract):
             )
 
         if "gl.nondet.web.render(" in source_code:
-
             findings += 1
             info_count += 1
 
@@ -359,7 +348,6 @@ class SecurityInspector(gl.Contract):
         # SEC009 LLM Usage Detection
         #
         if "gl.nondet.llm" in source_code:
-
             findings += 1
             info_count += 1
 
@@ -381,7 +369,6 @@ class SecurityInspector(gl.Contract):
             )
 
         if "exec_prompt(" in source_code:
-
             findings += 1
             info_count += 1
 
@@ -403,7 +390,6 @@ class SecurityInspector(gl.Contract):
             )
 
         if "llm_call" in source_code:
-
             findings += 1
             info_count += 1
 
@@ -423,67 +409,64 @@ class SecurityInspector(gl.Contract):
                 "additional validation.\n"
                 "========================================\n"
             )
+
         #
         # SEC010 Excessive LLM Dependence
         #
         llm_usage_count = (
-        source_code.count("gl.nondet.llm") +
-        source_code.count("exec_prompt(") +
-        source_code.count("llm_call")
+            source_code.count("gl.nondet.llm") +
+            source_code.count("exec_prompt(") +
+            source_code.count("llm_call")
         )
-        
+
         if llm_usage_count >= 5:
-            
             score -= 15
             findings += 1
             medium_count += 1
             report += (
-            "\n"
-            "========================================\n"
-            "MEDIUM RISK\n\n"
-            "Issue:\n"
-            "Excessive LLM Dependence\n\n"
-            "Explanation:\n"
-            "The contract relies heavily on AI generated outputs.\n\n"
-            "Impact:\n"
-            "Business logic may become difficult to audit,\n"
-            "predict, and reproduce consistently.\n\n"
-            "Recommendation:\n"
-            "Reduce AI involvement in critical state-changing\n"
-            "operations and validate AI responses.\n\n"
-            "AI Usage Count:\n"
-            + str(llm_usage_count)
-            + "\n========================================\n"
+                "\n"
+                "========================================\n"
+                "MEDIUM RISK\n\n"
+                "Issue:\n"
+                "Excessive LLM Dependence\n\n"
+                "Explanation:\n"
+                "The contract relies heavily on AI generated outputs.\n\n"
+                "Impact:\n"
+                "Business logic may become difficult to audit,\n"
+                "predict, and reproduce consistently.\n\n"
+                "Recommendation:\n"
+                "Reduce AI involvement in critical state-changing\n"
+                "operations and validate AI responses.\n\n"
+                "AI Usage Count:\n"
+                + str(llm_usage_count)
+                + "\n========================================\n"
             )
-            
-        elif llm_usage_count >= 2:            
-            
+        elif llm_usage_count >= 2:
             score -= 10
             findings += 1
             low_count += 1
-                
             report += (
-            "\n"
-            "========================================\n"
-            "LOW RISK\n\n"
-            "Issue:\n"
-            "Increased AI Dependence\n\n"
-            "Explanation:\n"
-            "The contract uses multiple AI interactions.\n\n"
-            "Impact:\n"
-            "Business logic may become harder to\n"
-            "audit and reproduce consistently.\n\n"
-            "Recommendation:\n"
-            "Review whether every AI call is necessary\n"
-            "and validate outputs.\n\n"
-            "AI Usage Count:\n"
-            + str(llm_usage_count)
-            + "\n========================================\n"
+                "\n"
+                "========================================\n"
+                "LOW RISK\n\n"
+                "Issue:\n"
+                "Increased AI Dependence\n\n"
+                "Explanation:\n"
+                "The contract uses multiple AI interactions.\n\n"
+                "Impact:\n"
+                "Business logic may become harder to\n"
+                "audit and reproduce consistently.\n\n"
+                "Recommendation:\n"
+                "Review whether every AI call is necessary\n"
+                "and validate outputs.\n\n"
+                "AI Usage Count:\n"
+                + str(llm_usage_count)
+                + "\n========================================\n"
             )
+
         #
         # SEC011 Unvalidated External Response
         #
-
         has_external_response = (
             "gl.nondet.llm" in source_code or
             "exec_prompt(" in source_code or
@@ -500,8 +483,9 @@ class SecurityInspector(gl.Contract):
             "assert(" in source_code or
             "json.loads(" in source_code or
             "parse_json" in source_code or
-            "try:" in source_code or
-            "except" in source_code
+            "int(" in source_code or
+            "float(" in source_code or
+            "bool(" in source_code
         )
 
         has_decision_logic = (
@@ -510,16 +494,16 @@ class SecurityInspector(gl.Contract):
             "while " in source_code
         )
 
-        has_state_change = (
-            "self." in source_code and "=" in source_code
+        has_critical_state_update = (
+            ("self." in source_code and "=" in source_code) and
+            not ("self.score" in source_code or "self.findings" in source_code)
         )
 
         if (
             has_external_response and
-            (has_decision_logic or has_state_change) and
+            (has_decision_logic or has_critical_state_update) and
             not has_validation
         ):
-
             score -= 15
             findings += 1
             medium_count += 1
@@ -529,26 +513,17 @@ class SecurityInspector(gl.Contract):
                 "========================================\n"
                 "MEDIUM RISK\n\n"
                 "Issue:\n"
-                "Unvalidated External Response\n\n"
+                "Unvalidated External Response (Strict Check)\n\n"
                 "Explanation:\n"
-                "The contract appears to consume data "
-                "from an external source and use it in "
-                "business logic or state-changing "
-                "operations without visible validation.\n\n"
+                "The contract consumes external data (Web, LLM, or Cross-Contract) "
+                "and uses it in conditional logic or state updates without "
+                "prior validation, type casting, or sanitization.\n\n"
                 "Impact:\n"
-                "Malformed, manipulated or unexpected "
-                "responses may influence contract "
-                "behaviour, business decisions or state "
-                "changes.\n\n"
+                "Unsanitized or malicious external payloads can manipulate "
+                "contract execution flow and corrupt state integrity.\n\n"
                 "Recommendation:\n"
-                "Validate external responses before "
-                "using them in critical logic.\n\n"
-                "Examples:\n"
-                "- Range validation\n"
-                "- Schema validation\n"
-                "- Type validation\n"
-                "- Sanity checks\n"
-                "- Exception handling\n"
+                "Always validate, parse (e.g., json.loads), or type-cast (e.g., int) "
+                "external responses before utilizing them in critical operations.\n"
                 "========================================\n"
             )
 
@@ -576,7 +551,7 @@ class SecurityInspector(gl.Contract):
             "Risk Level     : " + risk + "\n"
             "Total Findings : " + str(findings) + "\n"
             "========================================\n"
-         )
+        )
 
         summary = (
             "\n"
@@ -590,7 +565,6 @@ class SecurityInspector(gl.Contract):
             "Audit Engine Version : " + self.audit_version + "\n"
             "========================================\n"
         )
-        
 
         report = header + summary + report
 
@@ -608,36 +582,29 @@ class SecurityInspector(gl.Contract):
     def get_high_count(self) -> u256:
         return self.high_count
 
-
     @gl.public.view
     def get_medium_count(self) -> u256:
         return self.medium_count
-
 
     @gl.public.view
     def get_low_count(self) -> u256:
         return self.low_count
 
-
     @gl.public.view
     def get_info_count(self) -> u256:
         return self.info_count
-
 
     @gl.public.view
     def get_score(self) -> u256:
         return self.score
 
-
     @gl.public.view
     def get_findings_count(self) -> u256:
         return self.findings_count
 
-
     @gl.public.view
     def get_risk_level(self) -> str:
         return self.risk_level
-
 
     @gl.public.view
     def get_findings(self) -> str:
