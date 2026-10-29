@@ -1,0 +1,92 @@
+SecurityInspector Contracts
+Kumpulan kontrak uji (test cases) untuk memvalidasi kemampuan SecurityInspector dalam mendeteksi pola risiko dan kerentanan pada kontrak GenLayer.
+
+Current Version
+SecurityInspector v0_2.PY
+
+Latest Updates
+SEC010 - Excessive LLM Dependence
+Rule baru untuk mengidentifikasi kontrak yang sangat bergantung pada output AI.
+
+Detection Logic:
+
+Menghitung penggunaan:
+gl.nondet.llm
+exec_prompt(
+llm_call
+Severity:
+
+AI Usage Count	Severity
+2 - 4	LOW
+>= 5	MEDIUM
+Example Findings:
+
+Increased AI Dependence
+Excessive LLM Dependence
+SEC011 - Unvalidated External Response
+Rule baru untuk mendeteksi penggunaan data eksternal tanpa validasi yang memadai.
+
+External Sources:
+
+gl.nondet.llm
+exec_prompt(
+gl.nondet.web.get(
+gl.nondet.web.render(
+gl.contract.get_at(
+Validation Indicators:
+
+require(...)
+raise Exception
+assert
+json.loads
+parse_json
+try/except
+Detection Criteria:
+
+SEC011 akan aktif jika:
+
+Kontrak menerima data eksternal.
+Data digunakan dalam decision logic atau state change.
+Tidak ditemukan mekanisme validasi.
+Severity:
+
+MEDIUM
+Example Finding:
+
+Unvalidated External Response
+Test Cases
+SEC011_AI_State_Change_Without_Validation.py
+Demonstrasi kontrak yang menerima respons dari AI lalu menggunakan respons tersebut untuk mengubah state kontrak tanpa validasi.
+
+Expected Findings:
+
+SEC001 Runtime Dependency
+SEC007 Missing Access Control
+SEC009 LLM Usage Detected
+SEC010 Increased AI Dependence
+SEC011 Unvalidated External Response
+Purpose:
+
+Memastikan SEC011 mampu mendeteksi penggunaan output AI yang secara langsung memengaruhi keputusan bisnis atau perubahan state kontrak.
+
+Security Rules
+Rule	Description
+SEC001	Runtime Dependency
+SEC002	Cross Contract Call
+SEC003	Nondeterministic Execution
+SEC004	Timestamp Dependency
+SEC005	Transaction Time Dependency
+SEC006	Unbounded Storage Growth
+SEC007	Missing Access Control
+SEC008	External Web Access
+SEC009	LLM Usage Detection
+SEC010	Excessive LLM Dependence
+SEC011	Unvalidated External Response
+Roadmap
+Planned Improvements:
+
+SEC012 Prompt Injection Detection
+SEC013 State Change Inside Loop
+SEC014 Hardcoded Privileged Address
+SEC015 Missing Owner Initialization
+SEC018 Advanced Access Control Analysis
