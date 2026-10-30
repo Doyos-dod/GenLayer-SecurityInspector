@@ -13,7 +13,7 @@ The Solution: v3.2-Enhanced introduces a smart line-based comment cleaner that s
 
 Battle-Tested Reliability (100% Detection Rate)
 
-Based on the extreme "ChaosContract" stress test (which packs 13 vulnerability vectors simultaneously from SEC001 through SEC011)(on case folder advanced case "chaoscontraact.py), the v3.2-Enhanced global engine successfully detected all 13 issues accurately with zero omissions (zero false negatives).
+Based on the extreme "ChaosContract" stress test (which packs 13 vulnerability vectors simultaneously from SEC001 through SEC011)(on case folder advanced case "chaoscontraact.py"), the v3.2-Enhanced global engine successfully detected all 13 issues accurately with zero omissions (zero false negatives).
 
 Uncompromised Stability (Avoiding Fragile Parsing)
 
