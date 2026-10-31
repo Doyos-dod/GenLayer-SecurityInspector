@@ -6,6 +6,7 @@ SecurityInspector is a smart contract security analyzer built for GenLayer.
 Features
 Security Score
 Executive Summary
+GenVM-Lint Alignment
 Human Readable Findings
 Severity Breakdown
 Analyzer Protection
@@ -30,9 +31,13 @@ SEC008 External Web Access
 
 SEC009 LLM Usage Detection
 
+SEC010 - Excessive LLM Dependence
+
+SEC011 - Unvalidated External Response
+
 Current Version
-v0.1
+V3.2-Enhaced
 
 Status
-Stable
+BaseLine
 
