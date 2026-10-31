@@ -1,0 +1,1748 @@
+==================================================
+GENLAYER SECURITYINSPECTOR ENGINE: COMPREHENSIVE 20-CASE RESEARCH JOURNAL & AUDIT LOGS
+==================================================
+Target Ecosystem : GenLayer Virtual Machine (GenVM)
+Contract Engine  : SecurityInspector v3.2-Enhanced (on case 20. use with GenVM-Lint Alignment)
+State Status     : Frozen Version (v3.2-Enhanced) #for case 001-019
+Environment      : Bradbury Testnet / GenLayer Studio
+Total Cases      : 20 Cases (CASE-001 - CASE-020)
+==================================================
+
+==================================================
+CASE-001
+==================================================
+
+NAME
+
+ChaosContract V1
+(Full-Spectrum Security Rules Stress Test)
+
+CATEGORY
+
+Security Rules Benchmark (SEC001 - SEC011)
+Multi-Vulnerability Stress Test
+Baseline Audit Test
+
+PURPOSE
+
+CASE-001 dibuat sebagai penjelajah awal untuk memicu seluruh aturan keamanan
+(SEC001-SEC011) di dalam SecurityInspector generasi awal.
+
+--------------------------------------------------
+
+AUDIT ENGINE CONTEXT
+
+SecurityInspector Version:
+3.2
+
+GenVM-Lint Layer:
+INACTIVE
+
+--------------------------------------------------
+ORIGINAL SOURCE CODE
+--------------------------------------------------
+
+# { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }
+
+from genlayer import *
+
+class ChaosContract(gl.Contract):
+    score: u256
+    trail: str
+    owner: str
+
+    def __init__(self):
+        self.score = u256(100)
+        self.trail = ""
+        self.owner = "0x123456789abcdef"
+
+    @gl.public.write
+    def dangerous_universal_function(self, user_payload: str):
+        target_contract = gl.contract.get_at("0xTargetContractAddressHere")
+        gl.vm.run_nondet_default()
+        current_time = now()
+        tx_creation = created()
+        self.trail += user_payload
+
+        raw_web_data = gl.nondet.web.get("https://api.example.com/price")
+        gl.nondet.web.render("https://example.com/dashboard")
+
+        ai_res_1 = gl.nondet.llm("Analyze threat 1")
+        ai_res_2 = gl.nondet.llm("Analyze threat 2")
+        ai_res_3 = exec_prompt("Analyze threat 3")
+        ai_res_4 = exec_prompt("Analyze threat 4")
+        ai_res_5 = llm_call("Analyze threat 5")
+
+        if raw_web_data == "critical_alert":
+            self.score = u256(0)
+
+--------------------------------------------------
+SECURITYINSPECTOR REPORT
+--------------------------------------------------
+
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 0
+Risk Level     : HIGH
+Total Findings : 14
+========================================
+
+========================================
+EXECUTIVE SUMMARY
+========================================
+
+High Risk Findings   : 1
+Medium Risk Findings : 3
+Low Risk Findings    : 2
+Info Findings        : 8
+
+Audit Engine Version : 3.2
+========================================
+
+========================================
+INFO
+
+Issue:
+Runtime Dependency
+
+Explanation:
+The contract relies on a specific runtime dependency package.
+
+Impact:
+Runtime upgrades, compatibility changes, or dependency updates may affect contract behaviour and execution.
+
+Recommendation:
+Review dependency requirements and verify contract compatibility after runtime upgrades.
+========================================
+
+========================================
+INFO
+
+Issue:
+Cross Contract Call
+
+Explanation:
+The contract interacts with another contract or external on-chain target.
+
+Impact:
+Execution results may depend on the behaviour and availability of external contracts.
+
+Recommendation:
+Validate external responses and handle unexpected failures safely.
+========================================
+
+========================================
+INFO
+
+Issue:
+Nondeterministic Execution
+
+Explanation:
+The contract uses nondeterministic execution mechanisms.
+
+Impact:
+Validators may receive different inputs or produce varying execution results.
+
+Recommendation:
+Validate nondeterministic outputs and avoid using them as the sole basis for critical business decisions.
+========================================
+
+========================================
+LOW RISK
+
+Issue:
+Timestamp Dependency
+
+Explanation:
+The contract relies on the current timestamp during execution.
+
+Impact:
+Time based logic may behave differently depending on when the contract is executed.
+
+Recommendation:
+Avoid using timestamps as the only factor for critical decisions.
+========================================
+
+========================================
+LOW RISK
+
+Issue:
+Transaction Time Dependency
+
+Explanation:
+The contract relies on transaction creation time.
+
+Impact:
+Contract behaviour may vary depending on when a transaction was created.
+
+Recommendation:
+Avoid relying exclusively on transaction time for critical business logic.
+========================================
+
+========================================
+MEDIUM RISK
+
+Issue:
+Unbounded Storage Growth
+
+Explanation:
+A storage variable appears to grow continuously without limits.
+
+Impact:
+Contract storage may increase over time, resulting in higher storage costs and reduced efficiency.
+
+Recommendation:
+Implement limits, pruning mechanisms, or cleanup routines to control storage growth.
+========================================
+
+========================================
+HIGH RISK
+
+Issue:
+Missing Access Control
+
+Explanation:
+A public write method was detected but no owner or admin validation was found.
+
+Impact:
+Unauthorized users may be able to modify the contract state.
+
+Recommendation:
+Add owner or admin validation before allowing state changes.
+
+Example:
+if caller != self.owner:
+    raise Exception('Unauthorized')
+or
+
+if caller != self.admin:
+    raise Exception('Unauthorized')
+========================================
+
+========================================
+INFO
+
+Issue:
+External Web Access (GET)
+
+Explanation:
+The contract retrieves information from an external website.
+
+Impact:
+Contract behaviour may depend on third party data sources outside blockchain control.
+
+Recommendation:
+Validate and verify external data before using it in critical logic.
+========================================
+
+========================================
+INFO
+
+Issue:
+External Web Access (RENDER)
+
+Explanation:
+The contract renders external web content before processing it.
+
+Impact:
+Website changes may affect the behaviour and output of the contract.
+
+Recommendation:
+Use trusted sources and validate all retrieved content.
+========================================
+
+========================================
+INFO
+
+Issue:
+LLM Usage Detected
+
+Explanation:
+The contract uses a Large Language Model.
+
+Impact:
+Outputs may vary depending on prompts,
+model versions and execution context.
+
+Recommendation:
+Validate AI generated responses before
+using them in important decisions.
+========================================
+
+========================================
+INFO
+
+Issue:
+Prompt Execution Detected
+
+Explanation:
+The contract sends prompts to an AI model.
+
+Impact:
+Different prompts may produce different
+results and behaviours.
+
+Recommendation:
+Review prompts regularly and validate
+generated outputs.
+========================================
+
+========================================
+INFO
+
+Issue:
+LLM Interaction Detected
+
+Explanation:
+The contract interacts with a language model.
+
+Impact:
+Responses may vary depending on context,
+model behaviour and prompt design.
+
+Recommendation:
+Do not rely solely on AI output without
+additional validation.
+========================================
+
+========================================
+MEDIUM RISK
+
+Issue:
+Excessive LLM Dependence
+
+Explanation:
+The contract relies heavily on AI generated outputs.
+
+Impact:
+Business logic may become difficult to audit,
+predict, and reproduce consistently.
+
+Recommendation:
+Reduce AI involvement in critical state-changing
+operations and validate AI responses.
+
+AI Usage Count:
+5
+========================================
+
+DEBUG SEC011
+external=True
+validation=False
+decision=True
+state=True
+
+========================================
+MEDIUM RISK
+
+Issue:
+Unvalidated External Response
+
+Explanation:
+The contract appears to consume data from an external source and use it in business logic or state-changing operations without visible validation.
+
+Impact:
+Malformed, manipulated or unexpected responses may influence contract behaviour, business decisions or state changes.
+
+Recommendation:
+Validate external responses before using them in critical logic.
+
+Examples:
+- Range validation
+- Schema validation
+- Type validation
+- Sanity checks
+- Exception handling
+========================================
+
+
+==================================================
+CASE-002
+==================================================
+
+NAME
+
+Missing Access Control Isolation Test
+
+CATEGORY
+
+Access Control Verification (SEC007)
+
+PURPOSE
+
+Menguji deteksi khusus untuk metode penulisan publik tanpa pemeriksaan otorisasi pemilik/admin.
+
+--------------------------------------------------
+ORIGINAL SOURCE CODE
+--------------------------------------------------
+
+# { "Depends": "py-genlayer:test" }
+
+from genlayer import *
+
+class Vault(gl.Contract):
+
+    balance: u256
+
+    def __init__(self):
+        self.balance = 1000
+
+    @gl.public.write
+    def withdraw_all(self):
+        self.balance = 0
+
+--------------------------------------------------
+SECURITYINSPECTOR REPORT
+--------------------------------------------------
+
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 70
+Risk Level     : MEDIUM
+Total Findings : 2
+========================================
+
+========================================
+EXECUTIVE SUMMARY
+========================================
+
+High Risk Findings   : 1
+Medium Risk Findings : 0
+Low Risk Findings    : 0
+Info Findings        : 1
+
+Audit Engine Version : 3.2
+========================================
+
+========================================
+INFO
+
+Issue:
+Runtime Dependency
+
+Explanation:
+The contract relies on a specific runtime dependency package.
+========================================
+
+========================================
+HIGH RISK
+
+Issue:
+Missing Access Control
+
+Explanation:
+A public write method was detected but no owner or admin validation was found.
+
+Impact:
+Unauthorized users may be able to modify the contract state.
+========================================
+
+DEBUG SEC011
+external=False
+validation=False
+decision=False
+state=True
+
+
+==================================================
+CASE-003
+==================================================
+
+NAME
+
+Basic AI Usage Test
+
+CATEGORY
+
+AI / LLM Detection (SEC009)
+
+PURPOSE
+
+Menguji pengenalan panggilan LLM dasar tanpa eksekusi berulang atau manipulasi state langsung.
+
+--------------------------------------------------
+ORIGINAL SOURCE CODE
+--------------------------------------------------
+
+# { "Depends": "py-genlayer:test" }
+
+from genlayer import *
+
+class AIHelper(gl.Contract):
+
+    @gl.public.write
+    def ask(self):
+
+        answer = gl.nondet.llm.exec_prompt(
+            "What is blockchain?"
+        )
+
+        return answer
+
+--------------------------------------------------
+SECURITYINSPECTOR REPORT
+--------------------------------------------------
+
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 60
+Risk Level     : MEDIUM
+Total Findings : 5
+========================================
+
+========================================
+EXECUTIVE SUMMARY
+========================================
+
+High Risk Findings   : 1
+Medium Risk Findings : 0
+Low Risk Findings    : 1
+Info Findings        : 3
+
+Audit Engine Version : 3.2
+========================================
+
+DEBUG SEC011
+external=True
+validation=False
+decision=False
+state=False
+
+
+==================================================
+CASE-004
+==================================================
+
+NAME
+
+AI Dependence Escalation Test
+
+CATEGORY
+
+AI Threshold Analysis (SEC010)
+
+PURPOSE
+
+Menguji kalkulasi jumlah pemanggilan LLM berturut-turut di dalam satu fungsi.
+
+--------------------------------------------------
+ORIGINAL SOURCE CODE
+--------------------------------------------------
+
+# { "Depends": "py-genlayer:test" }
+
+from genlayer import *
+
+class AIAnalyzer(gl.Contract):
+
+    @gl.public.write
+    def analyze(self):
+
+        a = gl.nondet.llm.exec_prompt("Risk?")
+        b = gl.nondet.llm.exec_prompt("Score?")
+
+        return a + b
+
+--------------------------------------------------
+SECURITYINSPECTOR REPORT
+--------------------------------------------------
+
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 60
+Risk Level     : MEDIUM
+Total Findings : 5
+========================================
+
+DEBUG SEC011
+external=True
+validation=False
+decision=False
+state=False
+
+
+==================================================
+CASE-005
+==================================================
+
+NAME
+
+Unvalidated AI Decision Flow
+
+CATEGORY
+
+AI Business Logic & State Coupling
+
+PURPOSE
+
+Menguji respon engine ketika keluaran LLM langsung menjadi penentu alur percabangan state.
+
+--------------------------------------------------
+ORIGINAL SOURCE CODE
+--------------------------------------------------
+
+# { "Depends": "py-genlayer:test" }
+
+from genlayer import *
+
+class AIApproval(gl.Contract):
+
+    status: str
+
+    def __init__(self):
+        self.status = "PENDING"
+
+    @gl.public.write
+    def review(self):
+
+        answer = gl.nondet.llm.exec_prompt("Reply only APPROVE or REJECT")
+
+        if answer == "APPROVE":
+            self.status = "APPROVED"
+        else:
+            self.status = "REJECTED"
+
+    @gl.public.view
+    def get_status(self) -> str:
+        return self.status
+
+--------------------------------------------------
+SECURITYINSPECTOR REPORT
+--------------------------------------------------
+
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 60
+Risk Level     : MEDIUM
+Total Findings : 5
+========================================
+
+DEBUG SEC011
+external=True
+validation=False
+decision=False
+state=False
+
+
+==================================================
+CASE-006
+==================================================
+
+NAME
+
+Cross Contract Call & Network Exception Trace
+
+CATEGORY
+
+Cross Contract Interactivity (SEC002)
+RPC Exception & Consensus Validation
+
+PURPOSE
+
+CASE-006 menguji pemanggilan kontrak eksternal via gl.contract.get_at() serta menangkap
+kejadian batas lingkungan testnet berupa kegagalan skema RPC akibat target alamat tidak ditemukan.
+
+--------------------------------------------------
+ORIGINAL SOURCE CODE
+--------------------------------------------------
+
+# { "Depends": "py-genlayer:test" }
+
+from genlayer import *
+
+class Reader(gl.Contract):
+
+    value: str
+
+    @gl.public.write
+    def read(self, address: Address):
+
+        peer = gl.contract.get_at(address)
+        self.value = peer.get_value()
+
+--------------------------------------------------
+SECURITYINSPECTOR REPORT
+--------------------------------------------------
+
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 50
+Risk Level     : MEDIUM
+Total Findings : 4
+========================================
+
+========================================
+EXECUTIVE SUMMARY
+========================================
+
+High Risk Findings   : 1
+Medium Risk Findings : 1
+Low Risk Findings    : 0
+Info Findings        : 2
+
+Audit Engine Version : 3.2
+========================================
+
+DEBUG SEC011
+external=True
+validation=False
+decision=False
+state=True
+
+--------------------------------------------------
+ENVIRONMENTAL RPC ERROR REPORT
+--------------------------------------------------
+
+Error Code    : -32001
+Method        : gen_getContractSchema
+Error Message : Contract 0x1B19EA0B2C702B2e8a2C555C267C6E8AA512198e not deployed
+
+Traceback Excerpt:
+File "/app/backend/protocol_rpc/endpoints.py", line 1080, in get_contract_schema
+File "/app/backend/database_handler/contract_snapshot.py", line 78, in _load_contract_account
+backend.database_handler.errors.ContractNotFoundError: Contract 0x1B19EA0B2C702B2e8a2C555C267C6E8AA512198e not deployed
+
+--------------------------------------------------
+VALIDATOR CONSENSUS ANALYSIS
+--------------------------------------------------
+
+Consensus Status: ACCEPTED / AGREED BY QUORUM
+
+Votes Summary:
+- 0x336458747913FE397be82c4F0926ACeB3ab13618: AGREE
+- 0x4868b172ddEBC18b5219aaCeAB77ae0Df330c83A: AGREE
+- 0x9C182DE7F93AdbE8ee3D62570613eC23c5683cAc: AGREE
+- 0xF7D08d12dB37D3e02D1833b5cB7e56B07F114186: IDLE (Cancelled after Quorum)
+- 0xb04cdDC4a6Ff6A0aDF715cfe00Fa307b901cebD4: IDLE (Cancelled after Quorum)
+
+Leader Receipt Hash:
+17effc60f8acf0faea2c32a466d2749b734373eff217d139846cd118f7e65512
+
+
+==================================================
+CASE-007
+==================================================
+
+NAME
+
+Timestamp Dependency Verification
+
+CATEGORY
+
+Time Determinism (SEC004)
+
+PURPOSE
+
+Menguji deteksi fungsi waktu real-time now() pada logika kondisi penutupan kontrak.
+
+--------------------------------------------------
+ORIGINAL SOURCE CODE
+--------------------------------------------------
+
+# { "Depends": "py-genlayer:test" }
+
+from genlayer import *
+
+class TimedSale(gl.Contract):
+
+    closed: bool
+
+    def __init__(self):
+        self.closed = False
+
+    @gl.public.write
+    def check(self):
+
+        if now() > 100000:
+            self.closed = True
+
+--------------------------------------------------
+SECURITYINSPECTOR REPORT
+--------------------------------------------------
+
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 60
+Risk Level     : MEDIUM
+Total Findings : 3
+========================================
+
+DEBUG SEC011
+external=False
+validation=False
+decision=True
+state=True
+
+
+==================================================
+CASE-008
+==================================================
+
+NAME
+
+Transaction Time Dependency Test
+
+CATEGORY
+
+Tx Time Analysis (SEC005)
+
+PURPOSE
+
+Menguji pengenalan metode created() untuk mencegah ketergantungan waktu transaksi murni.
+
+--------------------------------------------------
+ORIGINAL SOURCE CODE
+--------------------------------------------------
+
+# { "Depends": "py-genlayer:test" }
+
+from genlayer import *
+
+class TransactionGate(gl.Contract):
+
+    status: str
+
+    def __init__(self):
+        self.status = "OPEN"
+
+    @gl.public.write
+    def check(self):
+
+        if created() > 100000:
+            self.status = "CLOSED"
+
+--------------------------------------------------
+SECURITYINSPECTOR REPORT
+--------------------------------------------------
+
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 60
+Risk Level     : MEDIUM
+Total Findings : 3
+========================================
+
+DEBUG SEC011
+external=False
+validation=False
+decision=True
+state=True
+
+
+==================================================
+CASE-009
+==================================================
+
+NAME
+
+Unbounded Storage Growth Test
+
+CATEGORY
+
+Resource & Storage Management (SEC006)
+
+PURPOSE
+
+Menguji pengenalan operator akumulasi string (+=( pada variabel state tanpa pembatasan ukuran.
+
+--------------------------------------------------
+ORIGINAL SOURCE CODE
+--------------------------------------------------
+
+# { "Depends": "py-genlayer:test" }
+
+from genlayer import *
+
+class Logger(gl.Contract):
+
+    trail: str
+
+    def __init__(self):
+        self.trail = ""
+
+    @gl.public.write
+    def log(self, message: str):
+
+        self.trail += message
+
+--------------------------------------------------
+SECURITYINSPECTOR REPORT
+--------------------------------------------------
+
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 50
+Risk Level     : MEDIUM
+Total Findings : 3
+========================================
+
+DEBUG SEC011
+external=False
+validation=False
+decision=False
+state=True
+
+
+==================================================
+CASE-010
+==================================================
+
+NAME
+
+Unvalidated Web Response Ingestion
+
+CATEGORY
+
+Web Interaction & Validation (SEC008 & SEC011)
+
+PURPOSE
+
+Menguji pengambilan data web eksternal (gl.nondet.web.get) yang dimasukkan langsung ke state.
+
+--------------------------------------------------
+ORIGINAL SOURCE CODE
+--------------------------------------------------
+
+# { "Depends": "py-genlayer:test" }
+
+from genlayer import *
+
+class PriceFeed(gl.Contract):
+
+    price: str
+
+    @gl.public.write
+    def update(self):
+
+        self.price = gl.nondet.web.get(
+            "https://example.com/price"
+        )
+
+--------------------------------------------------
+SECURITYINSPECTOR REPORT
+--------------------------------------------------
+
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 55
+Risk Level     : MEDIUM
+Total Findings : 4
+========================================
+
+DEBUG SEC011
+external=True
+validation=False
+decision=False
+state=True
+
+
+==================================================
+CASE-011
+==================================================
+
+NAME
+
+Nondeterministic Execution Trigger
+
+CATEGORY
+
+Virtual Machine Determinism (SEC003)
+
+PURPOSE
+
+Menguji deteksi mekanisme penanganan nondeterminisme bawaan vm.run_nondet_default().
+
+--------------------------------------------------
+ORIGINAL SOURCE CODE
+--------------------------------------------------
+
+# { "Depends": "py-genlayer:test" }
+
+from genlayer import *
+
+class ValidatorVote(gl.Contract):
+
+    result: str
+
+    @gl.public.write
+    def vote(self):
+
+        self.result = gl.vm.run_nondet_default(
+            "leader",
+            "validator"
+        )
+
+--------------------------------------------------
+SECURITYINSPECTOR REPORT
+--------------------------------------------------
+
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 65
+Risk Level     : MEDIUM
+Total Findings : 3
+========================================
+
+DEBUG SEC011
+external=False
+validation=False
+decision=False
+state=True
+
+
+==================================================
+CASE-012
+==================================================
+
+NAME
+
+AI Control Funds Risk
+
+CATEGORY
+
+AI Governance Risk
+
+PURPOSE
+
+Menguji skenario bahaya tinggi di mana model LLM diberi kuasa langsung menguras aset/saldo (balance).
+
+--------------------------------------------------
+ORIGINAL SOURCE CODE
+--------------------------------------------------
+
+# { "Depends": "py-genlayer:test" }
+
+from genlayer import *
+
+class AITreasury(gl.Contract):
+
+    balance: u256
+
+    def __init__(self):
+        self.balance = 1000
+
+    @gl.public.write
+    def review(self):
+
+        decision = gl.nondet.llm.exec_prompt(
+            "Approve withdrawal?"
+        )
+
+        if decision == "YES":
+            self.balance = 0
+
+--------------------------------------------------
+SECURITYINSPECTOR REPORT
+--------------------------------------------------
+
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 45
+Risk Level     : HIGH
+Total Findings : 6
+========================================
+
+DEBUG SEC011
+external=True
+validation=False
+decision=True
+state=True
+
+
+==================================================
+CASE-013
+==================================================
+
+NAME
+
+Web Driven State Lock
+
+CATEGORY
+
+External Oracle Vulnerability
+
+PURPOSE
+
+Menguji kerapuhan state kontrak ketika terkunci berdasarkan data mentah dari API web publik.
+
+--------------------------------------------------
+ORIGINAL SOURCE CODE
+--------------------------------------------------
+
+# { "Depends": "py-genlayer:test" }
+
+from genlayer import *
+
+class WeatherLock(gl.Contract):
+
+    status: str
+
+    def __init__(self):
+        self.status = "OPEN"
+
+    @gl.public.write
+    def update(self):
+
+        weather = gl.nondet.web.get(
+            "https://weather.example"
+        )
+
+        if weather == "STORM":
+            self.status = "LOCKED"
+
+--------------------------------------------------
+SECURITYINSPECTOR REPORT
+--------------------------------------------------
+
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 55
+Risk Level     : MEDIUM
+Total Findings : 4
+========================================
+
+DEBUG SEC011
+external=True
+validation=False
+decision=True
+state=True
+
+
+==================================================
+CASE-014
+==================================================
+
+NAME
+
+Cross-Contract Controlled State
+
+CATEGORY
+
+Cross-Chain / Inter-Contract Dependency
+
+PURPOSE
+
+Menguji pembaruan state lokal yang sangat tergantung dari balasan status kontrak eksternal.
+
+--------------------------------------------------
+ORIGINAL SOURCE CODE
+--------------------------------------------------
+
+# { "Depends": "py-genlayer:test" }
+
+from genlayer import *
+
+class Controller(gl.Contract):
+
+    enabled: bool
+
+    def __init__(self):
+        self.enabled = False
+
+    @gl.public.write
+    def sync(self, address: Address):
+
+        peer = gl.contract.get_at(address)
+        status = peer.get_status()
+
+        if status == "ACTIVE":
+            self.enabled = True
+
+--------------------------------------------------
+SECURITYINSPECTOR REPORT
+--------------------------------------------------
+
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 50
+Risk Level     : MEDIUM
+Total Findings : 4
+========================================
+
+DEBUG SEC011
+external=True
+validation=False
+decision=True
+state=True
+
+
+==================================================
+CASE-015
+==================================================
+
+NAME
+
+Try-Except Validation Bypass Investigation
+
+CATEGORY
+
+SEC011 Precision & Exception Analysis
+
+PURPOSE
+
+Menguji ketahanan parser SEC011 terhadap upaya penyembunyian kontrol akses dan panggilan eksternal
+di dalam blok penanganan eksepsi (try-except).
+
+--------------------------------------------------
+ORIGINAL SOURCE CODE
+--------------------------------------------------
+
+# { "Depends": "py-genlayer:test" }
+
+from genlayer import *
+
+class TrickyController(gl.Contract):
+
+    owner: Address
+    admin: Address
+    data_cache: str
+
+    def __init__(self):
+        self.owner = gl.message.sender
+        self.admin = gl.message.sender
+        self.data_cache = ""
+
+    @gl.public.write
+    def update_system(self, payload: str):
+        if gl.message.sender.to_hex() == self.owner.to_hex():
+            pass
+        else:
+            raise Exception("Access Denied!")
+
+        external_data = self._fetch_peer_data()
+
+        try:
+            self.data_cache = str(external_data)
+        except Exception:
+            self.data_cache = "DEFAULT_SAFE_VALUE"
+
+    def _fetch_peer_data(self) -> str:
+        peer = gl.contract.get_at("0x1234567890abcdef")
+        return peer.get_status()
+
+--------------------------------------------------
+SECURITYINSPECTOR REPORT
+--------------------------------------------------
+
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 95
+Risk Level     : LOW
+Total Findings : 2
+========================================
+
+DEBUG SEC011
+external=True
+validation=True
+decision=True
+state=True
+
+
+==================================================
+CASE-016
+==================================================
+
+NAME
+
+Standard Web API Direct Fetch
+
+CATEGORY
+
+Unsanitized Input Ingestion
+
+PURPOSE
+
+Menguji skenario standar penulisan variabel state secara langsung dari balasan HTTP GET.
+
+--------------------------------------------------
+ORIGINAL SOURCE CODE
+--------------------------------------------------
+
+@gl.public.write
+def fetch_external_price(self):
+    raw_data = gl.nondet.web.get("https://api.example.com/price")
+    self.price = raw_data
+
+--------------------------------------------------
+SECURITYINSPECTOR REPORT
+--------------------------------------------------
+
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 55
+Risk Level     : MEDIUM
+Total Findings : 3
+========================================
+
+DEBUG SEC011
+external=True
+validation=False
+decision=False
+state=True
+
+
+==================================================
+CASE-017
+==================================================
+
+NAME
+
+Inline Validation Trap Test
+
+CATEGORY
+
+Semantic Validation Analysis
+
+PURPOSE
+
+Menguji apakah pengecekan permukaan (seperti string tidak kosong `if response != ""`) dianggap cukup
+oleh engine atau tetap memicu peringatan Unvalidated External Response.
+
+--------------------------------------------------
+ORIGINAL SOURCE CODE
+--------------------------------------------------
+
+@gl.public.write
+def process_llm_decision(self, prompt: str):
+    response = gl.nondet.llm.exec_prompt(prompt)
+    
+    if response != "":
+        self.user_tier = response
+    else:
+        self.user_tier = "GUEST"
+
+--------------------------------------------------
+SECURITYINSPECTOR REPORT
+--------------------------------------------------
+
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 55
+Risk Level     : MEDIUM
+Total Findings : 3
+========================================
+
+DEBUG SEC011
+external=True
+validation=False
+decision=False
+state=True
+
+
+==================================================
+CASE-018
+==================================================
+
+NAME
+
+Multi-Layered Bypass Structure Test
+
+CATEGORY
+
+Complex Validation Logic Verification
+
+PURPOSE
+
+Menguji deteksi parser ketika validasi akses formal (`raise Exception`), parsial try-except,
+dan interaksi LLM digabungkan secara bersamaan.
+
+--------------------------------------------------
+ORIGINAL SOURCE CODE
+--------------------------------------------------
+
+@gl.public.write
+def execute_critical_action(self, action_id: str):
+    if caller != self.owner:
+        raise Exception("Unauthorized Access")
+        
+    ai_payload = gl.nondet.llm.exec_prompt("Generate execution payload")
+    
+    if ai_payload is not None:
+        try:
+            parsed_val = str(ai_payload)
+            self.execution_status = parsed_val
+        except Exception:
+            self.execution_status = "FAILED"
+
+--------------------------------------------------
+SECURITYINSPECTOR REPORT
+--------------------------------------------------
+
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 90
+Risk Level     : LOW
+Total Findings : 3
+========================================
+
+DEBUG SEC011
+external=True
+validation=True
+decision=True
+state=True
+
+
+==================================================
+CASE-019
+==================================================
+
+NAME
+
+ChaosContract V2
+(Full-Spectrum Security Rules Stress Test)
+
+CATEGORY
+
+Security Rules Benchmark (SEC001 - SEC011)
+Multi-Vulnerability Stress Test
+Pre-Lint Benchmark
+
+PURPOSE
+
+ChaosContract V2 menggabungkan seluruh kerentanan logika bisnis (akses kontrol, storage growth,
+LLM abuse, web access, time dependence) untuk mengevaluasi batas kalkulasi skor akhir.
+
+--------------------------------------------------
+ORIGINAL SOURCE CODE
+--------------------------------------------------
+
+# { "Depends": "py-genlayer:chaos-pkg-v1" }
+
+from genlayer import *
+
+class ChaosContractV2(gl.Contract):
+    score: u256
+    findings_count: u256
+    risk_level: str
+    findings: str
+    
+    status: str
+    trail: str
+    price: u256
+    data_cache: str
+    execution_status: str
+
+    def __init__(self):
+        self.score = u256(100)
+        self.findings_count = u256(0)
+        self.risk_level = "LOW"
+        self.findings = ""
+        
+        self.status = "INIT"
+        self.trail = ""
+        self.price = u256(0)
+        self.data_cache = ""
+        self.execution_status = "IDLE"
+
+    @gl.public.write
+    def stress_test_all_rules(self, input_prompt: str):
+        if self.status == "LOCKED":
+            raise Exception("Contract is locked")
+
+        gl.vm.run_nondet_default()
+        current_time = now()
+        tx_time = created()
+        self.trail += f" | Executed at {current_time} - {tx_time}"
+
+        peer_data = gl.contract.get_at("0x1234567890abcdef").fetch_status()
+        web_raw = gl.nondet.web.get("https://api.chaos.test/data")
+        web_view = gl.nondet.web.render("https://api.chaos.test/ui")
+
+        ai_1 = gl.nondet.llm.exec_prompt(input_prompt)
+        ai_2 = exec_prompt("Analyze step 1")
+        ai_3 = llm_call("Analyze step 2")
+        ai_4 = gl.nondet.llm.exec_prompt("Summarize risk")
+        ai_5 = exec_prompt("Final check")
+
+        try:
+            parsed_payload = str(ai_1)
+            self.execution_status = parsed_payload
+        except Exception:
+            self.execution_status = "SAFE_FALLBACK"
+
+        self.price = web_raw
+
+--------------------------------------------------
+SECURITYINSPECTOR REPORT
+--------------------------------------------------
+
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 5
+Risk Level     : HIGH
+Total Findings : 13
+========================================
+
+========================================
+EXECUTIVE SUMMARY
+========================================
+
+High Risk Findings   : 1
+Medium Risk Findings : 2
+Low Risk Findings    : 2
+Info Findings        : 8
+
+Audit Engine Version : 3.2
+========================================
+
+DEBUG SEC011
+external=True
+validation=True
+decision=True
+state=True
+
+
+==================================================
+CASE-020
+==================================================
+
+NAME
+
+ChaosContract V2.1
+(GenVM-Lint Violation Stress Test)
+
+CATEGORY
+
+GenVM-Lint Research
+Deployment Compatibility
+Full Coverage Benchmark
+
+PURPOSE
+
+CASE-020 merupakan benchmark milestone pertama pasca penambahan modul GenVM-Lint Alignment.
+Menguji deteksi Forbidden Imports (os, sys, random) dan Forbidden State Structures (dict, list).
+
+--------------------------------------------------
+
+AUDIT ENGINE CONTEXT
+
+SecurityInspector Version:
+3.2-Enhanced with GenVM-Lint Alignment
+
+GenVM-Lint Layer:
+ACTIVE
+
+Research Phase:
+Post-GenVM-Lint Era
+
+--------------------------------------------------
+ORIGINAL SOURCE CODE
+--------------------------------------------------
+
+# { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }
+
+import os
+import sys
+import random
+
+from genlayer import *
+
+class ChaosContractLintFail(gl.Contract):
+    score: u256
+    findings_count: u256
+    risk_level: str
+    findings: str
+    
+    status: str
+    trail: str
+    price: u256
+    
+    active_cache: dict
+    user_list: list
+
+    def __init__(self):
+        self.score = u256(100)
+        self.findings_count = u256(0)
+        self.risk_level = "LOW"
+        self.findings = ""
+        
+        self.status = "INIT"
+        self.trail = ""
+        self.price = u256(0)
+        
+        self.active_cache = {}
+        self.user_list = []
+
+    @gl.public.write
+    def trigger_violations(self, input_prompt: str):
+        lucky_number = random.randint(1, 100)
+        
+        if lucky_number > 50:
+            self.status = "WIN"
+        else:
+            self.status = "LOSE"
+
+        web_raw = gl.nondet.web.get("https://api.chaos.test/data")
+        ai_resp = gl.nondet.llm.exec_prompt(input_prompt)
+        
+        self.price = web_raw
+
+--------------------------------------------------
+SECURITYINSPECTOR REPORT
+--------------------------------------------------
+
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 0
+Risk Level     : HIGH
+Total Findings : 11
+========================================
+
+========================================
+EXECUTIVE SUMMARY
+========================================
+
+High Risk Findings   : 4
+Medium Risk Findings : 2
+Low Risk Findings    : 1
+Info Findings        : 4
+
+Audit Engine Version :
+3.2-Enhanced with GenVM-Lint Alignment
+========================================
+
+========================================
+HIGH RISK (GenVM Lint Violation)
+
+Issue:
+Forbidden Import (os)
+
+Explanation:
+The contract imports 'os', which is strictly forbidden in the GenLayer VM environment.
+
+Impact:
+Contract compilation or deployment will fail.
+
+Recommendation:
+Remove 'import os' or related statements.
+========================================
+
+========================================
+HIGH RISK (GenVM Lint Violation)
+
+Issue:
+Forbidden Import (sys)
+
+Explanation:
+The contract imports 'sys', which is strictly forbidden in the GenLayer VM environment.
+
+Impact:
+Contract compilation or deployment will fail.
+
+Recommendation:
+Remove 'import sys' or related statements.
+========================================
+
+========================================
+HIGH RISK (GenVM Lint Violation)
+
+Issue:
+Forbidden Import (random)
+
+Explanation:
+The contract imports 'random', which is strictly forbidden in the GenLayer VM environment.
+
+Impact:
+Contract compilation or deployment will fail.
+
+Recommendation:
+Remove 'import random' or related statements.
+========================================
+
+========================================
+MEDIUM RISK (GenVM Lint Violation)
+
+Issue:
+Forbidden Data Structure in Active State
+
+Explanation:
+Standard Python dict or list structures were detected.
+
+Impact:
+GenLayer requires specialized storage types like TreeMap or DynArray for state management.
+
+Recommendation:
+Replace standard dictionaries or lists with GenLayer-compatible state collections.
+========================================
+
+========================================
+INFO
+
+Issue:
+Runtime Dependency
+========================================
+
+========================================
+HIGH RISK
+
+Issue:
+Missing Access Control
+========================================
+
+========================================
+INFO
+
+Issue:
+External Web Access (GET)
+========================================
+
+========================================
+INFO
+
+Issue:
+LLM Usage Detected
+========================================
+
+========================================
+INFO
+
+Issue:
+Prompt Execution Detected
+========================================
+
+========================================
+LOW RISK
+
+Issue:
+Increased AI Dependence
+
+AI Usage Count:
+2
+========================================
+
+DEBUG SEC011
+external=True
+validation=False
+decision=True
+state=True
+
+========================================
+MEDIUM RISK
+
+Issue:
+Unvalidated External Response
+========================================
+
+==================================================
+END OF RESEARCH JOURNAL & AUDIT LOGS
+==================================================
