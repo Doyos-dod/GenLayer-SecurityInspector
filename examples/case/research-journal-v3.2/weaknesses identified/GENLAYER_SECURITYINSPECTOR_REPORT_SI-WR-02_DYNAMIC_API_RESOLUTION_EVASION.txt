@@ -1,0 +1,98 @@
+GENLAYER SECURITYINSPECTOR v3.2
+TECHNICAL FINDING REPORT — SI-WR-02
+DYNAMIC API RESOLUTION EVASION
+Prepared: 31 October 2026
+Evidence cases: CASE-024, CASE-026, CASE-027
+
+1. EXECUTIVE SUMMARY
+Tests indicate that direct substring checks in SecurityInspector v3.2 can be
+bypassed at source level when API names are resolved dynamically through
+getattr(). CASE-026 supplied complete attribute names to getattr(); CASE-027
+constructed the same names by concatenating string fragments. Both reports
+contained only Runtime Dependency INFO and Missing Access Control HIGH, with
+SEC011 external=False. Direct checks for cross-contract calls, nondeterminism,
+web access, and LLM use were not reported.
+
+Assessment: CONFIRMED for source-level evasion of the tested direct lexical
+signatures. Runtime support and exploitability of the dynamic calls remain
+unverified.
+
+2. OBJECTIVE AND SCOPE
+Objective: Test whether the scanner recognizes relevant GenLayer API use
+when method and module references are obtained dynamically rather than
+written as direct dotted expressions.
+Scope: CASE-024 used getattr() for a nondeterministic LLM reference amid decoy
+comments. CASE-026 dynamically resolved contract, LLM, web GET, web RENDER,
+and VM methods using complete strings. CASE-027 used string concatenation to
+construct module and method names before getattr().
+
+3. METHODOLOGY
+- Keep scanner v3.2 frozen.
+- Replace direct dotted API expressions with dynamic attribute resolution.
+- For CASE-027, fragment the names and concatenate them at runtime.
+- Keep the `Depends` marker and public write method consistent with the
+  experiment design so baseline INFO/access-control findings remain visible.
+- Compare raw scanner reports and SEC011 debug values.
+
+4. OBSERVED EVIDENCE
+CASE-026:
+- Score 70; risk MEDIUM; 2 findings.
+- Findings: Runtime Dependency INFO; Missing Access Control HIGH.
+- SEC011: external=False, validation=False, decision=True, state=True.
+
+CASE-027:
+- Score 70; risk MEDIUM; 2 findings.
+- Findings: Runtime Dependency INFO; Missing Access Control HIGH.
+- SEC011: external=False, validation=False, decision=True, state=True.
+- Pre-test prediction matched score, risk, finding count, and finding types.
+
+CASE-024:
+- Dynamic `getattr(gl.nondet, "llm")` pattern was present.
+- Decoy comments included direct markers; report behavior showed lexical
+  contamination as well as failure to recognize the dynamic LLM resolution.
+- This is supporting but less isolated evidence than CASE-026/027.
+
+5. TECHNICAL ANALYSIS
+The tested API references included dynamic resolution of `gl.contract`,
+`get_at`, `gl.call`, `gl.nondet.llm`, `gl.nondet.web.get`,
+`gl.nondet.web.render`, and `gl.vm.run_nondet_default`. CASE-027 additionally
+assembled names such as `contract`, `get_at`, `call`, `nondet`, `llm`, `web`,
+`get`, and `run_nondet_default` from fragments.
+
+The reports show that the scanner's direct source signatures did not identify
+these constructs. SEC011 external=False in both CASE-026 and CASE-027 is
+consistent with its external-API gate depending on the literal signatures
+rather than resolved references.
+
+6. IMPACT ASSESSMENT
+Potential impact: False negatives in static source review. A contract may
+contain API dependencies or nondeterministic/external interactions that are
+not surfaced by the scanner when expressed through dynamic resolution.
+This can lead to incomplete findings and an overly reassuring score.
+
+7. CONFIDENCE AND LIMITATIONS
+Confidence: HIGH that the tested source forms bypassed the scanner's direct
+signature checks.
+Runtime limitation: These tests do not prove that GenVM supports or executes
+each dynamic call. A static-analysis bypass is not equivalent to a working
+runtime exploit or a deployable contract.
+
+8. RECOMMENDATIONS
+- Use syntax-aware analysis and resolve statically knowable getattr targets.
+- Evaluate constant string expressions, including concatenation, where safe.
+- Flag unresolved dynamic attribute access involving sensitive runtime
+  namespaces for manual review.
+- Track API references through helper functions and assignments where
+  feasible.
+- Distinguish “not detected” from “verified absent” in report language.
+- Add tests for direct calls, getattr with complete names, fragmented names,
+  aliases, helper wrappers, and computed names.
+
+9. NEXT VALIDATION
+Create a controlled three-way comparison using the same API and behavior:
+(1) direct dotted call, (2) getattr with complete strings, and
+(3) getattr with fragmented strings. Then separately test whether each form
+is accepted by the GenVM runtime. Keep scanner detection and runtime
+compatibility as separate result fields.
+
+END OF REPORT
