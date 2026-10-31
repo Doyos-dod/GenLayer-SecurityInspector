@@ -2,7 +2,7 @@ SecurityInspector Contracts
 Kumpulan kontrak uji (test cases) untuk memvalidasi kemampuan SecurityInspector dalam mendeteksi pola risiko dan kerentanan pada kontrak GenLayer.
 
 Current Version
-SecurityInspector v0_2.PY
+SecurityInspector v0_2(EXPERIMENT).PY
 
 Latest Updates
 SEC010 - Excessive LLM Dependence
