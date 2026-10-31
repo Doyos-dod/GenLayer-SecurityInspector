@@ -1,0 +1,95 @@
+GENLAYER SECURITYINSPECTOR v3.2
+MASTER WEAKNESS REGISTER — CASE-001 TO CASE-028
+Research status: Evidence-based interim register
+Prepared: 31 October 2026
+
+1. EXECUTIVE SUMMARY
+This register consolidates weakness patterns supported by the available
+experiments through CASE-028. It is a research artifact, not a claim that all
+possible scanner weaknesses have been found. Findings describe observed
+scanner behavior on controlled source samples; they do not establish runtime
+exploitability of the submitted target contracts.
+
+Three weakness clusters currently have direct experimental support:
+A. Lexical-context contamination / false-positive pattern detection.
+B. Evasion of direct API signatures through dynamic attribute resolution.
+C. SEC011 heuristic suppression by generic validation markers unrelated to
+   validation of the external response.
+
+2. MASTER REGISTER
+
+ID: SI-WR-01
+Title: Lexical-context contamination
+Category: False positives / lexical analysis
+Evidence: CASE-024, CASE-028
+Observed behavior: Decoy markers in comments and inert string content were
+reported as if they represented code patterns. CASE-028 returned 15 findings
+for a sample whose scanner signatures were placed inside a triple-quoted
+string, including forbidden imports, data-structure patterns, web/LLM markers,
+and other categories.
+Confidence: HIGH for the tested string-literal behavior; MEDIUM for broad
+comment-handling generalization because CASE-024 used decoy comments and
+other mixed markers.
+Limit: The present evidence does not separately quantify behavior for every
+Python lexical construct (ordinary strings, f-strings, docstrings, comments,
+multiline literals, escaped strings).
+
+ID: SI-WR-02
+Title: Dynamic API resolution evasion
+Category: False negatives / signature bypass
+Evidence: CASE-024, CASE-026, CASE-027
+Observed behavior: Dynamic getattr() resolution hid API names from direct
+substring checks. CASE-026 used complete attribute strings; CASE-027 built
+attribute names by concatenating fragments. Both returned only Runtime
+Dependency INFO and Missing Access Control HIGH, with SEC011 external=False.
+CASE-024 also showed a dynamic getattr() pattern not recognized by direct
+markers, alongside decoy comments.
+Confidence: HIGH for source-level bypass of the tested direct signature
+checks; runtime execution is unverified.
+Limit: No evidence yet that GenVM permits or successfully executes all tested
+dynamic calls. Static scanner evasion is distinct from runtime feasibility.
+
+ID: SI-WR-03
+Title: SEC011 generic-marker suppression
+Category: False negatives / heuristic validation gate
+Evidence: CASE-022, CASE-023, CASE-028
+Observed behavior: SEC011 uses presence of generic validation-like tokens as
+a whole-source gate. CASE-022 and CASE-023 had external=True and validation=True
+with decision/state indicators also true, yet SEC011 did not emit the expected
+unvalidated-response finding. CASE-028 also had validation=True because the
+source contained an owner-check exception marker; that marker is not evidence
+that external web/LLM responses are validated.
+Confidence: HIGH that generic source markers can satisfy the scanner's
+validation gate; MEDIUM that this always creates a false assurance without
+reviewing each target's complete semantics.
+Limit: The exact control and data-flow semantics are not analyzed by this
+scanner; conclusions are restricted to observed whole-source gating behavior.
+
+3. PRIORITIZATION
+Priority 1 — SI-WR-03: Replace generic validation-token presence with
+response-specific validation analysis; validate the actual returned value,
+shape, range, provenance, and use before state mutation.
+
+Priority 1 — SI-WR-02: Resolve API references semantically (AST or equivalent
+symbol resolution) and inspect dynamic attribute construction where possible.
+
+Priority 2 — SI-WR-01: Tokenize/parse source and exclude comments and literal
+contents from executable-code checks, while retaining explicit tests for
+annotations and decorator syntax where relevant.
+
+4. RESEARCH GAPS / NEXT VALIDATION
+- Run paired controls with identical signatures moved between executable
+  code, comments, docstrings, and string literals.
+- Add a paired dynamic-resolution test where the same API is direct, getattr
+  with full names, and getattr with fragmented names.
+- Test SEC011 with semantically valid response validation, unrelated assert,
+  owner-only checks, exception handling, and no validation in separate cases.
+- Verify GenVM runtime support independently; do not infer runtime success
+  from scanner output.
+
+5. INTERPRETATION RULE
+A scanner finding is not automatically a real vulnerability. A missing finding
+is not proof of safety. This register distinguishes observed detection
+behavior, technical interpretation, and runtime claims.
+
+END OF REGISTER
