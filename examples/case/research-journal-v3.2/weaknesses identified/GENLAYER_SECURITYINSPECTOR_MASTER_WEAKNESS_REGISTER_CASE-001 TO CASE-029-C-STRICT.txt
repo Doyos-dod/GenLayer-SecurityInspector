@@ -1,0 +1,256 @@
+GENLAYER SECURITYINSPECTOR v3.2
+MASTER WEAKNESS REGISTER — CASE-001 TO CASE-029-C-STRICT
+Research status: Evidence-based consolidated register
+Evaluation date: 31 October 2026
+Scanner baseline: Frozen v3.2-Enhanced with GenVM-Lint Alignment
+
+1. EXECUTIVE SUMMARY
+
+This register consolidates the evidence gathered in CASE-001 through
+CASE-029-C-STRICT. Three weakness clusters currently have direct
+experimental support:
+
+- SI-WR-01: Lexical-context contamination (false positives).
+- SI-WR-02: Dynamic API resolution evasion (false negatives).
+- SI-WR-03: SEC011 generic-validation suppression (false negatives and
+  false assurance).
+
+The strongest new evidence since the CASE-001-028 register is the controlled
+CASE-029 series. It tests the same `gl.nondet.llm` marker in active code,
+a comment, a docstring, and an ordinary string literal. The marker was
+reported in all four contexts. CASE-029-C-STRICT corrected the class
+inheritance mismatch in the initial docstring run, making the four-way
+comparison controlled on that variable.
+
+This is a scanner-behavior register, not a claim that all target contracts
+are exploitable. Runtime feasibility of dynamic calls remains unverified.
+
+2. MASTER WEAKNESS REGISTER
+
+ID: SI-WR-01
+TITLE: Lexical-context contamination
+CATEGORY: False positives / lexical analysis
+STATUS: CONFIRMED FOR TESTED MARKER AND CONTEXTS
+
+Evidence:
+- CASE-024: decoy patterns in comments mixed with dynamic API patterns;
+  useful supporting evidence, but not fully isolated.
+- CASE-028: multiple scanner signatures inside an inert triple-quoted
+  string still produced corresponding findings.
+- CASE-029-A: active-code positive control; `gl.nondet.llm` detected.
+- CASE-029-B: the same marker in a comment still produced LLM Usage
+  Detected and SEC011 external=True.
+- CASE-029-C-STRICT: the same marker in a method docstring still produced
+  LLM Usage Detected and SEC011 external=True; class declaration matched
+  A, B, and D.
+- CASE-029-D: the same marker in an ordinary string literal still
+  produced LLM Usage Detected and SEC011 external=True.
+
+Observed mechanism:
+The scanner's relevant source-wide marker checks treat the marker's text
+as sufficient evidence. The paired A-D sequence shows that the tested
+LLM marker is not restricted to executable code. CASE-028 demonstrates
+that the issue can affect multiple signature families in multiline
+string content.
+
+Impact:
+False positives, inflated finding counts, and potentially distorted risk
+interpretation. Documentation, comments, examples, or inert string values
+may be interpreted as actual API use or risky code patterns.
+
+Confidence:
+HIGH for `gl.nondet.llm` across the four tested contexts and for the
+CASE-028 multiline-string scenario. Do not generalize automatically to
+every rule, f-string, bytes literal, escaped literal, or Python syntax form.
+
+Limitations:
+The test establishes scanner text-matching behavior, not actual runtime
+LLM invocation. CASE-024 was a mixed test; CASE-029 is the cleaner paired
+experiment. CASE-029-A is the positive control, not itself a false positive.
+
+Recommendations:
+- Tokenize or parse source before applying executable-code signatures.
+- Exclude comments and literal bodies from executable API checks.
+- Retain syntax-aware handling for imports, decorators, and executable
+  attribute references.
+- Add regression tests for comments, docstrings, ordinary/multiline
+  strings, f-strings, bytes literals, concatenation, and escaped content.
+- Include evidence location and lexical context in each finding.
+
+------------------------------------------------------------
+
+ID: SI-WR-02
+TITLE: Dynamic API resolution evasion
+CATEGORY: False negatives / signature bypass
+STATUS: CONFIRMED FOR TESTED SOURCE FORMS; RUNTIME UNVERIFIED
+
+Evidence:
+- CASE-024: `getattr()` used to resolve `gl.nondet.llm`, alongside decoy
+  comments. Mixed evidence; less isolated.
+- CASE-026: complete attribute names supplied through `getattr()` for
+  contract lookup/call, LLM, web GET/RENDER, and VM nondeterministic API.
+  Actual report: score 70 MEDIUM; two findings only (Runtime Dependency
+  INFO and Missing Access Control HIGH); SEC011 external=False.
+- CASE-027: module and method names assembled from string fragments and
+  resolved through `getattr()`. Actual report: score 70 MEDIUM; same two
+  findings; SEC011 external=False. Prediction matched actual.
+
+Observed mechanism:
+The scanner's direct substring signatures did not recognize the tested
+API references when those references were dynamically resolved. Fragmented
+string construction further concealed the full API names from direct
+matching.
+
+Impact:
+Potential false negatives in source review. External, nondeterministic,
+web, LLM, or cross-contract interactions may not be surfaced, resulting in
+an incomplete report and potentially reassuring score.
+
+Confidence:
+HIGH that the tested source forms bypass the scanner's direct lexical
+signatures. Runtime support and successful execution of all tested calls
+inside GenVM have NOT been established.
+
+Limitations:
+A static scanner bypass is not proof that the target code compiles, deploys,
+or executes. Do not describe this as a working runtime exploit without
+independent GenVM validation.
+
+Recommendations:
+- Resolve statically knowable attribute references and aliases.
+- Evaluate safe constant-string concatenations.
+- Flag unresolved dynamic access to sensitive runtime namespaces.
+- Track references through helper functions where feasible.
+- Distinguish “not detected” from “verified absent.”
+- Test runtime compatibility separately from scanner detection.
+
+------------------------------------------------------------
+
+ID: SI-WR-03
+TITLE: SEC011 generic-validation suppression
+CATEGORY: False negatives / heuristic validation gate / false assurance
+STATUS: CONFIRMED THAT GENERIC TOKENS SATISFY THE GATE
+
+Primary evidence:
+- CASE-022: LLM result checked only for `is not None`, with `assert` and
+  try/except constructs; SEC011 flags external=True, validation=True,
+  decision=True, state=True, but no unvalidated external response finding.
+- CASE-023: external dependency passed through helper functions and
+  transformations before state mutation; same SEC011 flags and no
+  unvalidated external response finding.
+
+Supporting evidence:
+- CASE-028: external=True and validation=True while the active
+  `raise Exception("Unauthorized")` is an owner check, not response
+  validation; SEC011 did not report an unvalidated external response.
+- CASE-029-B, CASE-029-C-STRICT, CASE-029-D: the marker in non-executable
+  contexts sets external=True; the unrelated owner-check exception sets
+  validation=True. These outputs support the source-wide nature of the
+  two flags and show how unrelated tokens can satisfy the combined gate.
+
+Observed mechanism:
+SEC011 uses a source-wide set of validation-like strings (including
+`require`, `raise Exception`, `assert`, `json.loads`, and `parse_json`) as
+a generic gate. It does not prove that the marker validates the exact
+external response, checks its schema/range/provenance, or executes before
+the response influences state or a decision.
+
+Impact:
+False negatives and false assurance. An omitted SEC011 finding may be
+misread as evidence of response validation when the scanner has merely
+found an unrelated token elsewhere in the source.
+
+Confidence:
+HIGH that generic source markers can satisfy the validation gate, based
+on the documented scanner logic and observed debug flags. MEDIUM for the
+frequency and practical impact across arbitrary contracts; each target's
+semantics still require review.
+
+Limitations:
+CASE-022 and CASE-023 are the strongest external-response examples.
+CASE-028 and CASE-029 are supporting evidence for unrelated marker
+suppression, not proof that every omitted SEC011 finding is exploitable.
+
+Recommendations:
+- Bind validation to the exact external value and its dataflow.
+- Check expected type, schema, allowed values, bounds, provenance, and
+  error/empty states as appropriate.
+- Ensure validation occurs before the value affects state or decisions.
+- Do not let owner/admin authorization checks or unrelated assertions
+  satisfy a response-validation gate.
+- Report which value was validated and which condition established it.
+- If semantic analysis is unavailable, mark the condition for manual
+  review rather than implying validation is adequate.
+
+3. CROSS-CASE OBSERVATIONS AND NON-REGISTERED LIMITATIONS
+
+A. Score-floor saturation
+CASE-001 and CASE-025 returned score 0; CASE-019 returned score 5.
+CASE-025 produced 15 findings at score 0. Once the score floor is reached,
+the numeric score cannot distinguish additional penalty volume. This is a
+reporting/granularity limitation, not a separate confirmed detection bug.
+
+B. Business-invariant coverage boundary
+CASE-021 included amount/balance invariants that were not reported as
+standalone findings. The scanner's implemented SEC001-SEC011 rules do not
+constitute a comprehensive business-invariant verifier. Treat this as a
+coverage gap and future research direction, not a confirmed defect unless
+broader invariant detection is an explicit product claim.
+
+C. Source-wide heuristic architecture
+The scanner uses source-wide lexical checks rather than AST-based,
+per-function, control-flow, taint, or dataflow analysis. This architecture
+is consistent with SI-WR-01, SI-WR-02, and SI-WR-03. It should not be used
+to claim that every rule fails in every case.
+
+4. CASE-029 CONTROLLED COMPARISON
+
+Subtest             Marker context       LLM finding   SEC011 external
+CASE-029-A          Active code          Yes           True
+CASE-029-B          Comment              Yes           True
+CASE-029-C-STRICT   Docstring            Yes           True
+CASE-029-D          Ordinary string      Yes           True
+
+All four used the same `gl.Contract` class declaration and the same basic
+control structure. All returned score 100 / LOW, two INFO findings
+(Runtime Dependency and LLM Usage Detected), and SEC011 flags:
+external=True, validation=True, decision=True, state=True.
+A is the positive control. B, C-STRICT, and D show detections in
+non-executable contexts without an LLM API invocation.
+
+5. PRIORITIZATION
+
+Priority 1 — SI-WR-03:
+Replace generic source-wide validation-token presence with response-specific
+validation/dataflow analysis. The scanner should identify the exact value
+being validated and whether validation precedes its use.
+
+Priority 1 — SI-WR-02:
+Resolve statically knowable dynamic API references, aliases, and constant
+string expressions; flag unresolved dynamic access for manual review.
+
+Priority 2 — SI-WR-01:
+Use tokenization or parsing to separate executable syntax from comments
+and literal contents. Add context-aware regression tests.
+
+6. NEXT VALIDATION QUEUE
+
+- SI-WR-01: test other marker families in comments/docstrings/ordinary
+  strings using paired controls; include f-strings and escaped strings.
+- SI-WR-02: test aliasing, helper-returned references, computed names, and
+  verify runtime compatibility separately in GenVM.
+- SI-WR-03: paired tests for owner-only check, unrelated assert, null-only
+  check, schema/range validation of the exact response, and no validation.
+- Scoring: test whether the score floor obscures severity differences and
+  whether risk levels remain meaningful under high finding counts.
+- Coverage: define explicitly whether business-invariant verification is
+  in scanner scope before treating CASE-021 as a scanner defect.
+
+7. INTERPRETATION RULE
+
+A scanner finding is evidence that a rule fired, not proof of a runtime
+vulnerability. An absent finding is not proof of safety. Separate:
+(1) scanner source-pattern behavior, (2) semantic vulnerability in the
+target, and (3) runtime feasibility/exploitability.
+
+END OF MASTER WEAKNESS REGISTER
