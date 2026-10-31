@@ -1,0 +1,99 @@
+GENLAYER SECURITYINSPECTOR v3.2
+TECHNICAL FINDING REPORT — SI-WR-01
+LEXICAL-CONTEXT CONTAMINATION
+Prepared: 31 October 2026
+Evidence cases: CASE-024, CASE-028
+
+1. EXECUTIVE SUMMARY
+Controlled tests indicate that SecurityInspector v3.2 can interpret signature
+strings located in non-executable lexical contexts as if they were executable
+source patterns. In CASE-028, scanner markers were placed inside a triple-
+quoted string assigned to a local variable. The scanner nevertheless reported
+15 findings, including forbidden imports, forbidden data structures, web
+access, LLM usage, timestamp and storage-growth patterns.
+
+Assessment: CONFIRMED for the tested inert multiline-string scenario.
+This is evidence of lexical-context contamination in the tested checks, not
+proof that every rule or every Python string form behaves identically.
+
+2. OBJECTIVE AND SCOPE
+Objective: Determine whether the scanner distinguishes executable code from
+comments and string-literal content when applying source-pattern checks.
+Scope: CASE-024 included decoy comments mixed with dynamic API patterns.
+CASE-028 isolated a broad set of decoy signatures inside an inert triple-
+quoted string while retaining a harmless executable write method with owner
+validation.
+
+3. METHODOLOGY
+- Freeze SecurityInspector v3.2; do not modify scanner code.
+- Submit controlled target source containing known marker strings.
+- Place the CASE-028 marker strings only inside a multiline string literal.
+- Compare predicted detections with the scanner's raw report.
+- Preserve score, severity counts, individual finding names, and SEC011 debug
+  flags as observed outputs.
+
+4. OBSERVED EVIDENCE — CASE-028
+Raw scanner output:
+- Score 0; risk HIGH; 15 findings.
+- HIGH 2: Forbidden Import (os), Forbidden Import (random).
+- MEDIUM 3: Forbidden Data Structure in Active State, Unbounded Storage
+  Growth, Excessive LLM Dependence.
+- LOW 2: Timestamp Dependency, Transaction Time Dependency.
+- INFO 8: Runtime Dependency, Cross Contract Call, Nondeterministic
+  Execution, External Web Access (GET), External Web Access (RENDER),
+  LLM Usage Detected, Prompt Execution Detected, LLM Interaction Detected.
+- AI Usage Count: 7.
+- SEC011 debug: external=True, validation=True, decision=True, state=True.
+
+Prediction comparison:
+- Predicted 13 findings; actual 15.
+- Predicted and actual score/risk matched (0/HIGH).
+- Predicted HIGH/MEDIUM/LOW counts matched exactly.
+- INFO was underpredicted by two because Prompt Execution Detected and
+  LLM Interaction Detected were omitted from the prediction.
+
+5. TECHNICAL ANALYSIS
+The target placed patterns such as `import os`, `from random`, `dict(`,
+`gl.contract.get_at(`, `gl.nondet.web.get(`, `gl.nondet.llm`, `exec_prompt(`,
+and `llm_call` inside a triple-quoted string. These strings are data assigned
+to a local variable, not calls or imports executed by the target method.
+The scanner output nevertheless included the corresponding finding families.
+
+The observed behavior is consistent with substring-based checks that do not
+adequately remove or parse string-literal contents before matching. CASE-024
+provides additional mixed evidence involving decoy comments, but CASE-028 is
+the cleaner string-literal demonstration.
+
+6. IMPACT ASSESSMENT
+Primary impact: False positives and distorted risk reporting. A source file
+may be assigned severe findings because it contains documentation, examples,
+quoted code, or inert test strings rather than executable behavior.
+The score floor at zero in CASE-028 also saturates the numerical output,
+concealing the difference between the predicted 13 and actual 15 findings.
+
+7. CONFIDENCE AND LIMITATIONS
+Confidence: HIGH for the CASE-028 triple-quoted-string result.
+Confidence: MEDIUM for a general claim covering all comments and literal
+forms. The experiment does not separately test comments, docstrings,
+f-strings, bytes literals, concatenated literals, or escaped delimiters in
+isolation.
+No claim is made that the target has runtime vulnerabilities corresponding
+to these findings.
+
+8. RECOMMENDATIONS
+- Tokenize or parse source before matching security signatures.
+- Exclude comments and string literal bodies from executable-code checks.
+- Preserve checks for actual import statements, decorators, and executable
+  attribute references using syntax-aware matching.
+- Add regression tests for each lexical context: executable statement,
+  comment, docstring, ordinary string, multiline string, f-string, and
+  escaped-string content.
+- Report evidence locations and lexical context for every finding.
+
+9. NEXT VALIDATION
+Run paired tests that move identical marker strings between executable code,
+comments, docstrings, and ordinary/multiline string literals, changing no
+other relevant source. This will separate comment handling from literal
+handling and quantify rule-by-rule false positives.
+
+END OF REPORT
