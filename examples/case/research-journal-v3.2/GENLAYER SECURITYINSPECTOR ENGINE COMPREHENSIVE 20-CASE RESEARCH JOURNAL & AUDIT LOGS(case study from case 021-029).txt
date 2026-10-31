@@ -1,0 +1,2841 @@
+==================================================
+GENLAYER SECURITYINSPECTOR ENGINE: COMPREHENSIVE 32-CASE RESEARCH JOURNAL & AUDIT LOGS
+==================================================
+Target Ecosystem : GenLayer Virtual Machine (GenVM)
+Contract Engine  : SecurityInspector v3.2-Enhanced with GenVM-Lint Alignment
+State Status     : Frozen Version (v3.2-Enhanced)
+Environment      : GenLayer Studio
+Total Cases      : 13 Cases (CASE-021 - CASE-029)
+==================================================
+######################################################################
+# ADDENDUM: FOUR-CASE EXTENDED SECURITY EVALUATION
+# CASE-021 THROUGH CASE-024
+######################################################################
+
+Research status: SecurityInspector v3.2-Enhanced with GenVM-Lint Alignment
+Evaluation date: 2026-10-31
+Purpose: Extend the existing 20-case journal with four additional
+         adversarial test cases and their observed scanner reports.
+Important: The v3.2 source logic was not modified for these tests.
+
+---------------------------------------------------------------------
+CASE-021 — COMMON
+Title: Missing Authorization & Time Dependency
+---------------------------------------------------------------------
+
+TEST OBJECTIVE
+Evaluate detection of basic access-control omissions and timestamp
+usage in a contract with publicly writable state.
+
+PLANTED CONDITIONS
+- withdraw(amount) has no caller authorization check.
+- reset_balance() has no caller authorization check.
+- now() is used to update last_updated.
+- withdraw(amount) does not validate that amount is positive or that
+  the amount is no greater than the available balance.
+
+OBSERVED SECURITY REPORT
+Security Score : 60
+Risk Level     : MEDIUM
+Total Findings : 2
+High           : 1
+Medium         : 0
+Low            : 1
+Info           : 0
+
+Detected findings:
+1. LOW RISK — Timestamp Dependency
+   Explanation: The contract relies on the current timestamp during
+   execution. Time based logic may behave differently depending on
+   when the contract is executed.
+2. HIGH RISK — Missing Access Control
+   Explanation: A public write method was detected but no owner or
+   admin validation was found. Unauthorized users may be able to
+   modify the contract state.
+
+DEBUG SEC011
+external=False
+validation=False
+decision=False
+state=True
+
+EVALUATION
+- Timestamp dependency: detected; consistent with the planted now().
+- Missing access control: detected; consistent with the unprotected
+  public write methods.
+- Amount/balance invariant validation: not reported. This is an
+  additional test observation, not evidence of a dedicated SEC001-011
+  rule being expected to detect it.
+
+RESEARCH ASSESSMENT
+PARTIAL PASS — the scanner detected the two targeted pattern classes,
+but the report did not identify the missing amount/balance checks.
+
+RAW REPORT
+
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 60
+Risk Level     : MEDIUM
+Total Findings : 2
+========================================
+
+========================================
+EXECUTIVE SUMMARY
+========================================
+
+High Risk Findings   : 1
+Medium Risk Findings : 0
+Low Risk Findings    : 1
+Info Findings        : 0
+
+Audit Engine Version : 3.2-Enhanced with GenVM-Lint Alignment
+========================================
+
+========================================
+LOW RISK
+
+Issue:
+Timestamp Dependency
+
+Explanation:
+The contract relies on the current timestamp during execution.
+
+Impact:
+Time based logic may behave differently depending on when the contract is executed.
+
+Recommendation:
+Avoid using timestamps as the only factor for critical decisions.
+========================================
+
+========================================
+HIGH RISK
+
+Issue:
+Missing Access Control
+
+Explanation:
+A public write method was detected but no owner or admin validation was found.
+
+Impact:
+Unauthorized users may be able to modify the contract state.
+
+Recommendation:
+Add owner or admin validation before allowing state changes.
+
+Example:
+if caller != self.owner:
+    raise Exception('Unauthorized')
+or
+
+if caller != self.admin:
+    raise Exception('Unauthorized')
+========================================
+
+DEBUG SEC011
+external=False
+validation=False
+decision=False
+state=True
+
+
+---------------------------------------------------------------------
+CASE-022 — MODERATE
+Title: False Validation & Exception Handling Trap
+---------------------------------------------------------------------
+
+TEST OBJECTIVE
+Determine whether SEC011 distinguishes meaningful validation of an
+LLM result from shallow checks and generic exception handling.
+
+PLANTED CONDITIONS
+- LLM output is used to update contract state.
+- ai_result is checked only with `is not None` and `assert`.
+- The value is converted to str() without checking an allowed schema,
+  command set, or business rule.
+- A generic try/except surrounds state assignment.
+
+OBSERVED SECURITY REPORT
+Security Score : 100
+Risk Level     : LOW
+Total Findings : 1
+High           : 0
+Medium         : 0
+Low            : 0
+Info           : 1
+
+Detected finding:
+INFO — LLM Usage Detected
+
+DEBUG SEC011
+external=True
+validation=True
+decision=True
+state=True
+
+EVALUATION
+- LLM usage: detected.
+- SEC011 marked validation=True even though the test's checks do not
+  establish that the AI output is semantically authorized or safe.
+- The report contains no Medium or High finding for the weak
+  validation path.
+
+RESEARCH ASSESSMENT
+FAIL — false assurance signal. The debug flag `validation=True` and
+score 100 are not supported by the actual strength of the planted
+validation. This is a static-analysis assessment; it does not by itself
+prove runtime exploitability in a deployed environment.
+
+RAW REPORT
+
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 100
+Risk Level     : LOW
+Total Findings : 1
+========================================
+
+========================================
+EXECUTIVE SUMMARY
+========================================
+
+High Risk Findings   : 0
+Medium Risk Findings : 0
+Low Risk Findings    : 0
+Info Findings        : 1
+
+Audit Engine Version : 3.2-Enhanced with GenVM-Lint Alignment
+========================================
+
+========================================
+INFO
+
+Issue:
+LLM Usage Detected
+
+Explanation:
+The contract uses a Large Language Model.
+
+Impact:
+Outputs may vary depending on prompts,
+model versions and execution context.
+
+Recommendation:
+Validate AI generated responses before
+using them in important decisions.
+========================================
+
+DEBUG SEC011
+external=True
+validation=True
+decision=True
+state=True
+
+
+---------------------------------------------------------------------
+CASE-023 — ADVANCED
+Title: Indirect External Dependency & Hidden State Mutation
+---------------------------------------------------------------------
+
+TEST OBJECTIVE
+Probe whether the scanner recognizes the relationship between an
+external/LLM data source, helper-function transformations, and a later
+state mutation.
+
+PLANTED CONDITIONS
+- LLM output originates in _external_provider().
+- Data passes through _evaluate() and _normalize().
+- The check only rejects an empty value; it does not validate allowed
+  commands or business meaning.
+- _commit() writes the result into contract state.
+
+OBSERVED SECURITY REPORT
+Security Score : 100
+Risk Level     : LOW
+Total Findings : 1
+High           : 0
+Medium         : 0
+Low            : 0
+Info           : 1
+
+Detected finding:
+INFO — LLM Usage Detected
+
+DEBUG SEC011
+external=True
+validation=True
+decision=True
+state=True
+
+EVALUATION
+- LLM usage: detected.
+- SEC011 marked validation=True despite the shallow non-empty check.
+- The report does not establish that the scanner traced the value
+  across _external_provider() -> _evaluate()/_normalize() -> _commit().
+- The identical summary to CASE-022 does not, by itself, prove whether
+  interprocedural data-flow analysis occurred.
+
+RESEARCH ASSESSMENT
+FAIL for the intended semantic-validation/data-flow challenge. The
+observed report provides no evidence of a warning for the weak semantic
+check. Further differential tests are required before attributing the
+result to a specific internal cause.
+
+RAW REPORT
+
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 100
+Risk Level     : LOW
+Total Findings : 1
+========================================
+
+========================================
+EXECUTIVE SUMMARY
+========================================
+
+High Risk Findings   : 0
+Medium Risk Findings : 0
+Low Risk Findings    : 0
+Info Findings        : 1
+
+Audit Engine Version : 3.2-Enhanced with GenVM-Lint Alignment
+========================================
+
+========================================
+INFO
+
+Issue:
+LLM Usage Detected
+
+Explanation:
+The contract uses a Large Language Model.
+
+Impact:
+Outputs may vary depending on prompts,
+model versions and execution context.
+
+Recommendation:
+Validate AI generated responses before
+using them in important decisions.
+========================================
+
+DEBUG SEC011
+external=True
+validation=True
+decision=True
+state=True
+
+
+---------------------------------------------------------------------
+CASE-024 — GOD TIER / EXTREME
+Title: The Phantom Dependency
+---------------------------------------------------------------------
+
+TEST OBJECTIVE
+Probe resilience against dynamic attribute access and decoy patterns
+placed in comments, while testing detection of indirect LLM use and
+weak validation.
+
+PLANTED CONDITIONS
+- LLM access is expressed through getattr(gl.nondet, "llm").
+- The returned value is transformed and checked only for non-emptiness.
+- The decision is then passed to a separate state-mutating helper.
+- Comments contain decoy strings resembling cross-contract,
+  nondeterministic, and storage-growth patterns.
+
+OBSERVED SECURITY REPORT
+Security Score : 70
+Risk Level     : MEDIUM
+Total Findings : 3
+High           : 0
+Medium         : 1
+Low            : 0
+Info           : 2
+
+Detected findings:
+1. INFO — Cross Contract Call
+2. INFO — Nondeterministic Execution
+3. MEDIUM RISK — Unbounded Storage Growth
+
+DEBUG SEC011
+external=False
+validation=True
+decision=True
+state=True
+
+EVALUATION
+- The report did not identify LLM Usage Detected for the dynamic
+  getattr() access form.
+- The report identified Cross Contract Call and Nondeterministic
+  Execution even though the corresponding decoy strings were placed
+  in comments in the test source. This is consistent with a possible
+  comment-insensitive lexical scan; a controlled comment-removal test
+  is required to confirm causation.
+- Unbounded Storage Growth is consistent with the `self.trail +=`
+  decoy in a comment; this too requires a comment-removal control to
+  confirm the trigger.
+- SEC011 reported external=False despite the intended dynamic LLM
+  provider path. This suggests the external-source heuristic did not
+  recognize the dynamic access form.
+- SEC011 validation=True should not be interpreted as proof that the
+  provider output was semantically validated.
+
+RESEARCH ASSESSMENT
+FAIL for the intended adversarial-robustness challenge. The report
+shows possible false positives from comment decoys and a possible
+false negative for dynamically accessed LLM functionality. Exact
+causation should be established with controlled variants.
+
+RAW REPORT
+
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 70
+Risk Level     : MEDIUM
+Total Findings : 3
+========================================
+
+========================================
+EXECUTIVE SUMMARY
+========================================
+
+High Risk Findings   : 0
+Medium Risk Findings : 1
+Low Risk Findings    : 0
+Info Findings        : 2
+
+Audit Engine Version : 3.2-Enhanced with GenVM-Lint Alignment
+========================================
+
+========================================
+INFO
+
+Issue:
+Cross Contract Call
+
+Explanation:
+The contract interacts with another contract or external on-chain target.
+
+Impact:
+Execution results may depend on the behaviour and availability of external contracts.
+
+Recommendation:
+Validate external responses and handle unexpected failures safely.
+========================================
+
+========================================
+INFO
+
+Issue:
+Nondeterministic Execution
+
+Explanation:
+The contract uses nondeterministic execution mechanisms.
+
+Impact:
+Validators may receive different inputs or produce varying execution results.
+
+Recommendation:
+Validate nondeterministic outputs and avoid using them as the sole basis for critical business decisions.
+========================================
+
+========================================
+MEDIUM RISK
+
+Issue:
+Unbounded Storage Growth
+
+Explanation:
+A storage variable appears to grow continuously without limits.
+
+Impact:
+Contract storage may increase over time, resulting in higher storage costs and reduced efficiency.
+
+Recommendation:
+Implement limits, pruning mechanisms, or cleanup routines to control storage growth.
+========================================
+
+DEBUG SEC011
+external=False
+validation=True
+decision=True
+state=True
+
+
+---------------------------------------------------------------------
+CROSS-CASE SUMMARY — CASE-021 TO CASE-024
+---------------------------------------------------------------------
+
+CASE   LEVEL      SCORE   RISK      FINDINGS   RESEARCH ASSESSMENT
+021    COMMON       60    MEDIUM       2       PARTIAL PASS
+022    MODERATE    100    LOW          1       FAIL
+023    ADVANCED    100    LOW          1       FAIL
+024    GOD TIER     70    MEDIUM       3       FAIL
+
+KEY OBSERVATIONS
+1. CASE-021: basic timestamp and access-control patterns were detected.
+2. CASE-022: SEC011 validation=True despite checks that do not validate
+   the semantic safety or authorization of the LLM output.
+3. CASE-023: the report did not flag weak semantic validation; the
+   report alone cannot prove whether cross-function data flow was
+   traced internally.
+4. CASE-024: dynamic LLM access was not reported as LLM Usage; the
+   debug flag external=False; comment decoys appear to have triggered
+   unrelated findings, subject to confirmation through controlled tests.
+
+RESEARCH LIMITATIONS
+- These assessments are based on the submitted scanner reports and
+  the test-case source designs described in the research conversation.
+- A scanner report is not a proof of runtime exploitability.
+- The cause of each suspected false positive/false negative should be
+  isolated with one-variable-at-a-time control tests.
+- These four cases do not establish overall scanner accuracy,
+  precision, recall, or false-positive rate.
+- SecurityInspector v3.2 remains frozen; all future experiments must
+  use separate test copies and preserve the baseline source.
+
+RECOMMENDED CONTROL EXPERIMENTS
+A. Remove only the decoy comments from CASE-024 and rerun the same
+   frozen scanner. Compare all findings and debug flags.
+B. Replace getattr(gl.nondet, "llm") with direct gl.nondet.llm access,
+   keeping the rest of CASE-024 unchanged. Compare SEC009 detection.
+C. In CASE-022, remove assert/try markers one at a time while keeping
+   the LLM-to-state path unchanged. Observe whether SEC011 validation
+   changes from True to False.
+D. Keep CASE-023 logic identical but inline the helper functions one
+   at a time. This can help distinguish lexical detection from
+   interprocedural analysis.
+
+END OF ADDENDUM — CASE-021 THROUGH CASE-024
+######################################################################
+
+
+######################################################################
+# ADDENDUM: CASE-025
+######################################################################
+
+Research status: SecurityInspector v3.2-Enhanced with GenVM-Lint Alignment
+Evaluation date: 2026-10-31
+Purpose: Test direct, explicit presence of a broad set of scanner
+         signatures in one deliberately constructed source contract.
+Important: The v3.2 source logic was not modified. This is a static
+           scanner-pattern experiment; runtime deployability is not
+           established by this test.
+
+---------------------------------------------------------------------
+CASE-025 — COMMON
+Title: Full Spectrum Common — Direct Pattern Saturation
+---------------------------------------------------------------------
+
+TEST OBJECTIVE
+Determine whether SecurityInspector v3.2 detects a broad spectrum of
+its explicitly implemented lexical signatures when those signatures
+are present directly and visibly in one source file. This case is a
+baseline coverage test, not a test of semantic understanding.
+
+TEST SOURCE CODE
+
+```python
+# { "Depends": "py-genlayer:case-025" }
+
+import os
+import random
+import genlayer as gl
+
+class FullSpectrumCommon(gl.Contract):
+
+    owner: str
+    balance: int
+    status: str
+    trail: str
+    records: list
+    cache: dict
+
+    def __init__(self):
+        self.owner = "INITIAL_OWNER"
+        self.balance = 1000
+        self.status = "IDLE"
+        self.trail = ""
+        self.records = []
+        self.cache = {}
+
+    def _external_peer(self):
+        peer = gl.contract.get_at(
+            "0x1234567890"
+        )
+        return gl.call(peer)
+
+    def _nondeterministic_source(self):
+        return gl.vm.run_nondet_default(
+            lambda: random.randint(1, 100)
+        )
+
+    def _get_ai_decision(self):
+        first = gl.nondet.llm(
+            lambda: "APPROVE"
+        )
+        second = gl.nondet.llm(
+            lambda: "TRANSFER"
+        )
+        third = gl.nondet.llm(
+            lambda: "EXECUTE"
+        )
+        return first + second + third
+
+    @gl.public.write
+    def execute(self, amount: int):
+
+        # Access control is intentionally absent.
+        self.balance -= amount
+
+        # Time dependencies.
+        if now() > 100000:
+            self.status = "ACTIVE"
+
+        if created() > 100000:
+            self.status = "TIME_LOCKED"
+
+        # Unbounded storage growth.
+        self.trail += str(amount)
+
+        # External contract response.
+        peer_result = self._external_peer()
+
+        # External web response.
+        web_result = gl.nondet.web.get(
+            "https://example.com/data"
+        )
+
+        rendered_result = gl.nondet.web.render(
+            "https://example.com/page"
+        )
+
+        # AI output is used without semantic validation.
+        ai_result = self._get_ai_decision()
+
+        if ai_result:
+            self.status = str(ai_result)
+
+        self.cache["peer"] = peer_result
+        self.cache["web"] = web_result
+        self.records.append(rendered_result)
+
+        self.balance = self.balance + self._nondeterministic_source()
+
+    @gl.public.write
+    def emergency_reset(self):
+        # Another deliberately unprotected write method.
+        self.balance = 0
+        self.status = "RESET"
+
+    @gl.public.view
+    def get_status(self):
+        return self.status
+```
+
+OBSERVED SECURITY REPORT
+Security Score : 0
+Risk Level     : HIGH
+Total Findings : 15
+High           : 3
+Medium         : 3
+Low            : 3
+Info           : 6
+
+Detected findings:
+1. HIGH RISK — Forbidden Import (os)
+2. HIGH RISK — Forbidden Import (random)
+3. MEDIUM RISK — Forbidden Data Structure in Active State
+4. INFO — Runtime Dependency
+5. INFO — Cross Contract Call
+6. INFO — Nondeterministic Execution
+7. LOW RISK — Timestamp Dependency
+8. LOW RISK — Transaction Time Dependency
+9. MEDIUM RISK — Unbounded Storage Growth
+10. HIGH RISK — Missing Access Control
+11. INFO — External Web Access (GET)
+12. INFO — External Web Access (RENDER)
+13. INFO — LLM Usage Detected
+14. LOW RISK — Increased AI Dependence (AI Usage Count: 3)
+15. MEDIUM RISK — Unvalidated External Response
+
+DEBUG SEC011
+external=True
+validation=False
+decision=True
+state=True
+
+EVALUATION
+- The scanner detected both forbidden-import signatures explicitly
+  present in the source: os and random.
+- The standard list/dict assignment patterns were detected as one
+  GenVM-Lint data-structure finding.
+- The Depends marker, cross-contract call signatures,
+  nondeterministic execution marker, now(), created(), and
+  self.trail += patterns were all reported.
+- The public-write access-control heuristic reported missing access
+  control. The source contains an owner declaration and initializes
+  self.owner, but no recognized owner/admin comparison is present.
+- Both external web patterns were reported independently.
+- LLM Usage Detected appeared once even though gl.nondet.llm occurs
+  three times. Increased AI Dependence separately reported count 3.
+- SEC011 reported external=True, validation=False, decision=True,
+  state=True and produced Unvalidated External Response, consistent
+  with the planted external-data/state-use pattern and absence of its
+  recognized validation tokens.
+- The score reached its floor of 0 and the risk level was HIGH.
+  Multiple penalties accumulated beyond the available 100 points;
+  the score therefore does not express the number or exact severity
+  of all detected issues once the floor is reached.
+
+RESEARCH ASSESSMENT
+PASS for direct lexical-pattern coverage in this constructed case.
+The observed output matched all 15 expected finding categories and
+severity counts. This is not evidence that the scanner understands
+the underlying program semantics, nor does it establish runtime
+exploitability, complete coverage, or a low false-negative rate.
+
+The case is deliberately signature-dense. Its result should be read
+as confirmation that the scanner recognizes these direct textual
+forms, not as proof that equivalent indirect, renamed, split,
+commented, dynamically accessed, or semantically transformed forms
+will also be recognized.
+
+RAW REPORT
+
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 0
+Risk Level     : HIGH
+Total Findings : 15
+========================================
+
+========================================
+EXECUTIVE SUMMARY
+========================================
+
+High Risk Findings   : 3
+Medium Risk Findings : 3
+Low Risk Findings    : 3
+Info Findings        : 6
+
+Audit Engine Version : 3.2-Enhanced with GenVM-Lint Alignment
+========================================
+
+========================================
+HIGH RISK (GenVM Lint Violation)
+
+Issue:
+Forbidden Import (os)
+
+Explanation:
+The contract imports 'os', which is strictly forbidden in the GenLayer VM environment.
+
+Impact:
+Contract compilation or deployment will fail.
+
+Recommendation:
+Remove 'import os' or related statements.
+========================================
+
+========================================
+HIGH RISK (GenVM Lint Violation)
+
+Issue:
+Forbidden Import (random)
+
+Explanation:
+The contract imports 'random', which is strictly forbidden in the GenLayer VM environment.
+
+Impact:
+Contract compilation or deployment will fail.
+
+Recommendation:
+Remove 'import random' or related statements.
+========================================
+
+========================================
+MEDIUM RISK (GenVM Lint Violation)
+
+Issue:
+Forbidden Data Structure in Active State
+
+Explanation:
+Standard Python dict or list structures were detected.
+
+Impact:
+GenLayer requires specialized storage types like TreeMap or DynArray for state management.
+
+Recommendation:
+Replace standard dictionaries or lists with GenLayer-compatible state collections.
+========================================
+
+========================================
+INFO
+
+Issue:
+Runtime Dependency
+
+Explanation:
+The contract relies on a specific runtime dependency package.
+
+Impact:
+Runtime upgrades, compatibility changes, or dependency updates may affect contract behaviour and execution.
+
+Recommendation:
+Review dependency requirements and verify contract compatibility after runtime upgrades.
+========================================
+
+========================================
+INFO
+
+Issue:
+Cross Contract Call
+
+Explanation:
+The contract interacts with another contract or external on-chain target.
+
+Impact:
+Execution results may depend on the behaviour and availability of external contracts.
+
+Recommendation:
+Validate external responses and handle unexpected failures safely.
+========================================
+
+========================================
+INFO
+
+Issue:
+Nondeterministic Execution
+
+Explanation:
+The contract uses nondeterministic execution mechanisms.
+
+Impact:
+Validators may receive different inputs or produce varying execution results.
+
+Recommendation:
+Validate nondeterministic outputs and avoid using them as the sole basis for critical business decisions.
+========================================
+
+========================================
+LOW RISK
+
+Issue:
+Timestamp Dependency
+
+Explanation:
+The contract relies on the current timestamp during execution.
+
+Impact:
+Time based logic may behave differently depending on when the contract is executed.
+
+Recommendation:
+Avoid using timestamps as the only factor for critical decisions.
+========================================
+
+========================================
+LOW RISK
+
+Issue:
+Transaction Time Dependency
+
+Explanation:
+The contract relies on transaction creation time.
+
+Impact:
+Contract behaviour may vary depending on when a transaction was created.
+
+Recommendation:
+Avoid relying exclusively on transaction time for critical business logic.
+========================================
+
+========================================
+MEDIUM RISK
+
+Issue:
+Unbounded Storage Growth
+
+Explanation:
+A storage variable appears to grow continuously without limits.
+
+Impact:
+Contract storage may increase over time, resulting in higher storage costs and reduced efficiency.
+
+Recommendation:
+Implement limits, pruning mechanisms, or cleanup routines to control storage growth.
+========================================
+
+========================================
+HIGH RISK
+
+Issue:
+Missing Access Control
+
+Explanation:
+A public write method was detected but no owner or admin validation was found.
+
+Impact:
+Unauthorized users may be able to modify the contract state.
+
+Recommendation:
+Add owner or admin validation before allowing state changes.
+
+Example:
+if caller != self.owner:
+    raise Exception('Unauthorized')
+or
+
+if caller != self.admin:
+    raise Exception('Unauthorized')
+========================================
+
+========================================
+INFO
+
+Issue:
+External Web Access (GET)
+
+Explanation:
+The contract retrieves information from an external website.
+
+Impact:
+Contract behaviour may depend on third party data sources outside blockchain control.
+
+Recommendation:
+Validate and verify external data before using it in critical logic.
+========================================
+
+========================================
+INFO
+
+Issue:
+External Web Access (RENDER)
+
+Explanation:
+The contract renders external web content before processing it.
+
+Impact:
+Website changes may affect the behaviour and output of the contract.
+
+Recommendation:
+Use trusted sources and validate all retrieved content.
+========================================
+
+========================================
+INFO
+
+Issue:
+LLM Usage Detected
+
+Explanation:
+The contract uses a Large Language Model.
+
+Impact:
+Outputs may vary depending on prompts,
+model versions and execution context.
+
+Recommendation:
+Validate AI generated responses before
+using them in important decisions.
+========================================
+
+========================================
+LOW RISK
+
+Issue:
+Increased AI Dependence
+
+Explanation:
+The contract uses multiple AI interactions.
+
+Impact:
+Business logic may become harder to
+audit and reproduce consistently.
+
+Recommendation:
+Review whether every AI call is necessary
+and validate outputs.
+
+AI Usage Count:
+3
+========================================
+
+DEBUG SEC011
+external=True
+validation=False
+decision=True
+state=True
+
+========================================
+MEDIUM RISK
+
+Issue:
+Unvalidated External Response
+
+Explanation:
+The contract appears to consume data from an external source and use it in business logic or state-changing operations without visible validation.
+
+Impact:
+Malformed, manipulated or unexpected responses may influence contract behaviour, business decisions or state changes.
+
+Recommendation:
+Validate external responses before using them in critical logic.
+
+Examples:
+- Range validation
+- Schema validation
+- Type validation
+- Sanity checks
+- Exception handling
+========================================
+
+
+---------------------------------------------------------------------
+CROSS-CASE SUMMARY — CASE-021 TO CASE-025
+---------------------------------------------------------------------
+
+CASE   LEVEL      SCORE   RISK      FINDINGS   RESEARCH ASSESSMENT
+021    COMMON       60    MEDIUM       2       PARTIAL PASS
+022    MODERATE    100    LOW          1       FAIL
+023    ADVANCED    100    LOW          1       FAIL
+024    GOD TIER     70    MEDIUM       3       FAIL
+025    COMMON        0    HIGH        15       PASS (DIRECT PATTERNS)
+
+KEY OBSERVATIONS
+1. CASE-021: basic timestamp and access-control patterns were detected.
+2. CASE-022: SEC011 validation=True despite checks that do not validate
+   the semantic safety or authorization of the LLM output.
+3. CASE-023: the report did not flag weak semantic validation; the
+   report alone cannot prove whether cross-function data flow was
+   traced internally.
+4. CASE-024: dynamic LLM access was not reported as LLM Usage; the
+   debug flag external=False; comment decoys appear to have triggered
+   unrelated findings, subject to confirmation through controlled tests.
+5. CASE-025: all 15 expected direct-pattern findings were reported.
+   This validates literal-signature coverage for this source only;
+   it does not demonstrate semantic or adversarial robustness.
+
+CUMULATIVE SCORE SNAPSHOT — CASE-001 TO CASE-025
+
+Case count       : 25
+Average score    : 54.80
+Median score     : 60
+Minimum score    : 0
+Maximum score    : 100
+
+Risk distribution by scanner score:
+HIGH   (<50)     : 5 cases
+MEDIUM (50-79)   : 16 cases
+LOW    (80-100)  : 4 cases
+
+Note: These are descriptive statistics of scanner outputs, not
+measurements of scanner accuracy, precision, recall, or security.
+
+RESEARCH LIMITATIONS
+- These assessments are based on submitted scanner reports and the
+  test-case source designs recorded in this journal.
+- A scanner report is not proof of runtime exploitability.
+- Direct signature detection does not establish equivalent detection
+  for indirect or semantically equivalent code.
+- The cumulative score distribution describes scanner outputs only.
+- SecurityInspector v3.2 remains frozen; all future experiments must
+  preserve the baseline source and use separate test contracts.
+
+NEXT RESEARCH DIRECTION
+CASE-026 should avoid repeating the direct-signature saturation
+pattern. A useful next adversarial direction is to distribute or
+indirectly construct known signatures while keeping the actual
+security-relevant behaviour present, so the experiment tests the gap
+between lexical matching and program meaning.
+
+END OF ADDENDUM — CASE-025
+######################################################################
+
+
+######################################################################
+# ADDENDUM: CASE-026
+######################################################################
+
+CASE-026 — ADVERSARIAL: OBFUSCATED API RESOLUTION
+Dynamic Attribute Access & SEC011 Blind Spot
+
+OBJECTIVE
+Test whether SecurityInspector v3.2 detects security-relevant API usage
+when GenLayer API attributes are resolved dynamically through getattr()
+instead of appearing as direct literal call expressions.
+
+TEST SOURCE CODE (AS SUBMITTED)
+
+```python
+# { "Depends": "py-genlayer:case-026" }
+
+import genlayer as gl
+
+
+class DynamicResolverProbe(gl.Contract):
+
+    owner: str
+    status: str
+    result: str
+
+    def __init__(self):
+        self.owner = "INITIAL_OWNER"
+        self.status = "IDLE"
+        self.result = ""
+
+    def _resolve_peer(self):
+        contract_module = getattr(gl, "contract")
+        lookup_function = getattr(contract_module, "get_at")
+        peer = lookup_function("0x1234567890")
+
+        invoke_function = getattr(gl, "call")
+        return invoke_function(peer)
+
+    def _resolve_ai(self):
+        nondet_module = getattr(gl, "nondet")
+        model_function = getattr(nondet_module, "llm")
+
+        return model_function(
+            lambda: "APPROVE"
+        )
+
+    def _resolve_web(self):
+        nondet_module = getattr(gl, "nondet")
+        web_module = getattr(nondet_module, "web")
+        fetch_function = getattr(web_module, "get")
+
+        return fetch_function(
+            "https://example.com/data"
+        )
+
+    def _resolve_render(self):
+        nondet_module = getattr(gl, "nondet")
+        web_module = getattr(nondet_module, "web")
+        render_function = getattr(web_module, "render")
+
+        return render_function(
+            "https://example.com/page"
+        )
+
+    def _resolve_vm(self):
+        vm_module = getattr(gl, "vm")
+        runner = getattr(vm_module, "run_nondet_default")
+
+        return runner(lambda: 7)
+
+    @gl.public.write
+    def execute(self):
+
+        peer_result = self._resolve_peer()
+        ai_result = self._resolve_ai()
+        web_result = self._resolve_web()
+        rendered_result = self._resolve_render()
+        vm_result = self._resolve_vm()
+
+        if ai_result:
+            self.status = str(ai_result)
+
+        if peer_result:
+            self.result = str(peer_result)
+
+        if web_result:
+            self.result = str(web_result)
+
+        if rendered_result:
+            self.result = str(rendered_result)
+
+        self.status = self.status + str(vm_result)
+
+    @gl.public.view
+    def get_status(self):
+        return self.status
+```
+
+PRE-TEST PREDICTION
+- GenVM-Lint forbidden import: not detected.
+- Forbidden data structure: not detected.
+- SEC002 Cross Contract Call: not detected.
+- SEC003 Nondeterministic Execution: not detected.
+- SEC008 External Web GET/RENDER: not detected.
+- SEC009 LLM Usage: not detected.
+- SEC010 Increased AI Dependence: not detected.
+- SEC011 Unvalidated External Response: not detected.
+- SEC007 Missing Access Control: detected.
+- Predicted score: 70, MEDIUM.
+- Predicted findings: 1 (Missing Access Control, HIGH).
+
+ACTUAL RAW SCANNER REPORT (USER-SUBMITTED)
+
+"\n========================================\nGENLAYER SECURITY REPORT\n\nSecurity Score : 70\nRisk Level     : MEDIUM\nTotal Findings : 2\n========================================\n\n========================================\nEXECUTIVE SUMMARY\n========================================\n\nHigh Risk Findings   : 1\nMedium Risk Findings : 0\nLow Risk Findings    : 0\nInfo Findings        : 1\n\nAudit Engine Version : 3.2-Enhanced with GenVM-Lint Alignment\n========================================\n\n========================================\nINFO\n\nIssue:\nRuntime Dependency\n\nExplanation:\nThe contract relies on a specific runtime dependency package.\n\nImpact:\nRuntime upgrades, compatibility changes, or dependency updates may affect contract behaviour and execution.\n\nRecommendation:\nReview dependency requirements and verify contract compatibility after runtime upgrades.\n========================================\n\n========================================\nHIGH RISK\n\nIssue:\nMissing Access Control\n\nExplanation:\nA public write method was detected but no owner or admin validation was found.\n\nImpact:\nUnauthorized users may be able to modify the contract state.\n\nRecommendation:\nAdd owner or admin validation before allowing state changes.\n\nExample:\nif caller != self.owner:\n    raise Exception('Unauthorized')\nor\n\nif caller != self.admin:\n    raise Exception('Unauthorized')\n========================================\n\nDEBUG SEC011\nexternal=False\nvalidation=False\ndecision=True\nstate=True\n"
+
+PREDICTION VS ACTUAL
+- Score: predicted 70; actual 70 — exact match.
+- Risk: predicted MEDIUM; actual MEDIUM — exact match.
+- Findings: predicted 1; actual 2 — one additional INFO finding.
+- Missing Access Control: predicted and detected.
+- Runtime Dependency: unpredicted INFO finding; this explains the finding
+  count difference but did not change the score/risk outcome in this case.
+
+DETECTION ANALYSIS
+1. Dynamic cross-contract resolution through getattr() was not reported
+   as SEC002 Cross Contract Call.
+2. Dynamic run_nondet_default resolution was not reported as SEC003.
+3. Dynamic web.get and web.render resolution were not reported as SEC008.
+4. Dynamic nondet.llm resolution was not reported as SEC009 or SEC010.
+5. SEC011 external=False despite the source's dynamically resolved external
+   and nondeterministic API paths. decision=True and state=True were detected;
+   validation=False. The external lexical gate prevented the SEC011 finding.
+6. SEC007 correctly reported Missing Access Control.
+7. Runtime Dependency was an additional INFO finding. Its appearance is
+   recorded as observed; no further causal explanation is asserted here.
+
+RESEARCH ASSESSMENT: FAIL (DYNAMIC API EVASION)
+The report demonstrates a consistent lexical-detection blind spot for the
+specific dynamically resolved API patterns in this test source. Multiple
+security-relevant API names are present as string arguments to getattr(),
+but the scanner's direct source-substring checks did not recognize them as
+API invocations. SEC011's external flag also remained false, suppressing its
+composite finding.
+
+Scope limitation: this is evidence of static pattern evasion in the report,
+not proof that the dynamically resolved calls execute successfully in the
+GenVM runtime or are exploitable. Runtime compatibility and execution must
+be tested separately. The journal records scanner behavior, not assumed
+runtime behavior.
+
+CASE-026 RESULT
+Score: 70
+Risk: MEDIUM
+Findings: 2 (HIGH 1, MEDIUM 0, LOW 0, INFO 1)
+Research assessment: FAIL — dynamic API patterns bypassed direct lexical
+checks; access-control check still detected the unprotected public write.
+
+---------------------------------------------------------------------
+UPDATED CROSS-CASE SUMMARY — CASE-021 TO CASE-027
+---------------------------------------------------------------------
+
+CASE   LEVEL      SCORE   RISK      FINDINGS   RESEARCH ASSESSMENT
+021    COMMON       60    MEDIUM       2       PARTIAL PASS
+022    MODERATE    100    LOW          1       FAIL
+023    ADVANCED    100    LOW          1       FAIL
+024    GOD TIER     70    MEDIUM       3       FAIL
+025    COMMON        0    HIGH        15       PASS (DIRECT PATTERNS)
+026    ADVERSARIAL  70    MEDIUM       2       FAIL (DYNAMIC API EVASION)
+027    ADVERSARIAL  70    MEDIUM       2       FAIL (STRING FRAGMENTATION EVASION)
+
+KEY OBSERVATIONS — CASE-021 TO CASE-026
+1. CASE-021: basic timestamp and access-control patterns were detected.
+2. CASE-022: SEC011 validation=True despite checks that do not validate
+   semantic safety or authorization of the LLM output.
+3. CASE-023: the report did not flag weak semantic validation; the report
+   alone cannot prove whether cross-function data flow was traced internally.
+4. CASE-024: dynamic LLM access was not reported as LLM Usage; comment decoys
+   appeared to trigger unrelated findings, subject to controlled confirmation.
+5. CASE-025: all 15 expected direct-pattern findings were reported; this
+   supports literal-signature coverage for that source, not semantic robustness.
+6. CASE-026: multiple API paths hidden behind getattr() were not recognized;
+   SEC011 external=False despite decision=True and state=True. Missing access
+   control remained detectable.
+7. CASE-027: API names assembled from string fragments and resolved with
+   getattr() produced the same report as CASE-026; direct lexical checks again
+   missed the indirect contract, LLM, web, and VM API patterns.
+
+UPDATED CUMULATIVE SCORE SNAPSHOT — CASE-001 TO CASE-026
+
+Case count       : 27
+Average score    : 55.93
+Median score     : 60
+Minimum score    : 0
+Maximum score    : 100
+
+Risk distribution by scanner score:
+HIGH   (<50)     : 5 cases
+MEDIUM (50-79)   : 17 cases
+LOW    (80-100)  : 4 cases
+
+Note: These are descriptive statistics of scanner outputs, not measurements
+of scanner accuracy, precision, recall, or security.
+
+RESEARCH LIMITATIONS
+- Assessments are based on submitted scanner reports and recorded test
+  source designs.
+- A scanner report is not proof of runtime exploitability.
+- Direct signature detection does not establish equivalent detection for
+  indirect, dynamically resolved, or semantically equivalent code.
+- The cumulative score distribution describes scanner outputs only.
+- SecurityInspector v3.2 remains frozen; future experiments must preserve
+  the baseline source and use separate test contracts.
+
+NEXT RESEARCH DIRECTION
+CASE-028 should test lexical-context contamination: place signature-like API
+strings in comments, docstrings, and inert string literals while keeping the
+executable behavior harmless or absent. Use paired controls differing only
+in lexical context to measure false positives separately from true detection.
+
+END OF ADDENDUM — CASE-026
+######################################################################
+
+
+######################################################################
+CASE-027 — ADVERSARIAL: STRING FRAGMENTATION — DYNAMIC API NAME CONSTRUCTION
+######################################################################
+
+OBJECTIVE
+Test whether SecurityInspector v3.2 recognizes security-relevant APIs when
+module and function names are assembled from string fragments and resolved
+through getattr(), rather than appearing as direct source substrings.
+
+TARGET SOURCE
+
+```python
+# { "Depends": "py-genlayer:case-027" }
+
+import genlayer as gl
+
+
+class StringFragmentationProbe(gl.Contract):
+
+    owner: str
+    status: str
+    result: str
+
+    def __init__(self):
+        self.owner = "INITIAL_OWNER"
+        self.status = "IDLE"
+        self.result = ""
+
+    def _resolve_contract(self):
+        module_name = "con" + "tract"
+        function_name = "get" + "_at"
+
+        contract_module = getattr(gl, module_name)
+        lookup = getattr(contract_module, function_name)
+
+        peer = lookup("0x1234567890")
+
+        call_name = "ca" + "ll"
+        invoke = getattr(gl, call_name)
+
+        return invoke(peer)
+
+    def _resolve_ai(self):
+        module_name = "non" + "det"
+        function_name = "l" + "lm"
+
+        nondet_module = getattr(gl, module_name)
+        model = getattr(nondet_module, function_name)
+
+        return model(lambda: "APPROVE")
+
+    def _resolve_web(self):
+        module_name = "non" + "det"
+        web_name = "we" + "b"
+        function_name = "g" + "et"
+
+        nondet_module = getattr(gl, module_name)
+        web_module = getattr(nondet_module, web_name)
+        fetch = getattr(web_module, function_name)
+
+        return fetch("https://example.com/data")
+
+    def _resolve_vm(self):
+        module_name = "v" + "m"
+        function_name = "run_" + "nondet_default"
+
+        vm_module = getattr(gl, module_name)
+        runner = getattr(vm_module, function_name)
+
+        return runner(lambda: 7)
+
+    @gl.public.write
+    def execute(self):
+
+        peer_result = self._resolve_contract()
+        ai_result = self._resolve_ai()
+        web_result = self._resolve_web()
+        vm_result = self._resolve_vm()
+
+        if ai_result:
+            self.status = str(ai_result)
+
+        if peer_result:
+            self.result = str(peer_result)
+
+        if web_result:
+            self.result = str(web_result)
+
+        self.status = self.status + str(vm_result)
+
+    @gl.public.view
+    def get_status(self):
+        return self.status
+```
+
+PRE-TEST PREDICTION
+- Runtime Dependency: INFO expected.
+- Missing Access Control: HIGH expected.
+- SEC002 Cross Contract Call: not expected.
+- SEC003 Nondeterministic Execution: not expected.
+- SEC008 Web GET: not expected.
+- SEC009 LLM Usage: not expected.
+- SEC010 Increased AI Dependence: not expected.
+- SEC011 Unvalidated External Response: not expected.
+- Predicted score: 70; risk: MEDIUM; findings: 2.
+
+ACTUAL RAW REPORT (USER-SUBMITTED)
+
+```text
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 70
+Risk Level     : MEDIUM
+Total Findings : 2
+========================================
+
+========================================
+EXECUTIVE SUMMARY
+========================================
+
+High Risk Findings   : 1
+Medium Risk Findings : 0
+Low Risk Findings    : 0
+Info Findings        : 1
+
+Audit Engine Version : 3.2-Enhanced with GenVM-Lint Alignment
+========================================
+
+========================================
+INFO
+
+Issue:
+Runtime Dependency
+
+Explanation:
+The contract relies on a specific runtime dependency package.
+
+Impact:
+Runtime upgrades, compatibility changes, or dependency updates may affect
+contract behaviour and execution.
+
+Recommendation:
+Review dependency requirements and verify contract compatibility after
+runtime upgrades.
+========================================
+
+========================================
+HIGH RISK
+
+Issue:
+Missing Access Control
+
+Explanation:
+A public write method was detected but no owner or admin validation was
+found.
+
+Impact:
+Unauthorized users may be able to modify the contract state.
+
+Recommendation:
+Add owner or admin validation before allowing state changes.
+
+Example:
+if caller != self.owner:
+    raise Exception('Unauthorized')
+or
+
+if caller != self.admin:
+    raise Exception('Unauthorized')
+========================================
+
+DEBUG SEC011
+external=False
+validation=False
+decision=True
+state=True
+```
+
+PREDICTION VS ACTUAL
+- Score: predicted 70; actual 70 — exact match.
+- Risk: predicted MEDIUM; actual MEDIUM — exact match.
+- Findings: predicted 2; actual 2 — exact match.
+- Expected Runtime Dependency INFO and Missing Access Control HIGH both
+  appeared in the report.
+- SEC002, SEC003, SEC008, SEC009, SEC010, and SEC011 were not reported,
+  consistent with the pre-test prediction.
+
+ANALYSIS
+The target constructs API-related names by concatenating fragments, then
+passes the resulting names to getattr(). The scanner report contains only
+Runtime Dependency and Missing Access Control. Its direct lexical checks
+therefore did not recognize the hidden contract lookup/call, LLM, web GET,
+or nondeterministic VM execution patterns in this test source.
+
+SEC011 debug flags were external=False, validation=False, decision=True,
+and state=True. The external gate remained false, so SEC011 did not emit its
+composite unvalidated-response finding despite the decision and state flags
+being true. This is consistent with the scanner's whole-source substring
+heuristic.
+
+CASE-027 closely reproduces the outcome of CASE-026. The distinguishing
+change is that CASE-027 fragments module/function names before dynamic
+attribute resolution, while CASE-026 passes complete attribute names to
+getattr(). The identical report supports a second, more specific instance of
+lexical API-resolution evasion. It does not establish runtime success or
+exploitability of those dynamically resolved calls.
+
+RESEARCH ASSESSMENT
+FAIL — dynamic API names assembled from string fragments bypassed the
+scanner's direct signature checks. Missing Access Control and Runtime
+Dependency remained reported. Predicted score, risk, and finding count were
+all exact.
+
+SCOPE LIMITATION
+This report demonstrates the scanner's response to the submitted source.
+It does not prove that the dynamic getattr() calls are supported by GenVM,
+that the target methods execute successfully, or that an exploitable
+vulnerability exists at runtime. Runtime validation is a separate task.
+
+CASE-027 RESULT
+Score: 70
+Risk: MEDIUM
+Findings: 2 (HIGH 1, MEDIUM 0, LOW 0, INFO 1)
+Research assessment: FAIL (STRING FRAGMENTATION EVASION)
+
+---------------------------------------------------------------------
+UPDATED CUMULATIVE SCORE SNAPSHOT — CASE-001 TO CASE-027
+
+Case count       : 27
+Average score    : 55.93
+Median score     : 60
+Minimum score    : 0
+Maximum score    : 100
+
+Risk distribution by scanner score:
+HIGH   (<50)     : 5 cases
+MEDIUM (50-79)   : 18 cases
+LOW    (80-100)  : 4 cases
+
+Note: These are descriptive statistics of scanner outputs, not measurements
+of scanner accuracy, precision, recall, or security.
+
+NEXT RESEARCH DIRECTION
+CASE-028 should test lexical-context contamination: place signature-like API
+strings in comments, docstrings, and inert string literals while keeping the
+executable behavior harmless or absent. Use paired controls differing only
+in lexical context to measure false positives separately from true detection.
+
+END OF ADDENDUM — CASE-027
+######################################################################
+
+######################################################################
+CASE-028 — LEXICAL CONTEXT CONTAMINATION
+######################################################################
+
+TEST OBJECTIVE
+Determine whether SecurityInspector v3.2 treats signature-like text inside
+an inert multiline string as executable source patterns. The target's real
+write method contains owner validation and a harmless state update. The
+scanner-signature decoys are placed inside a triple-quoted string assigned
+to a local variable.
+
+PRE-TEST PREDICTION
+- Security Score: 0
+- Risk Level: HIGH
+- Total Findings: 13
+- Severity distribution: HIGH 2, MEDIUM 3, LOW 2, INFO 6
+- Expected detections: forbidden imports (os, random), forbidden data
+  structure, runtime dependency, cross-contract call, nondeterministic
+  execution, timestamp dependency, transaction time dependency, unbounded
+  storage growth, web GET, web RENDER, LLM usage, and increased AI dependence.
+- SEC011 was expected not to emit a finding because the executable source
+  contains a recognized validation marker (`raise Exception`) while the
+  other SEC011 gates were expected to be true.
+
+RAW ACTUAL REPORT
+"""
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 0
+Risk Level     : HIGH
+Total Findings : 15
+========================================
+
+========================================
+EXECUTIVE SUMMARY
+========================================
+
+High Risk Findings   : 2
+Medium Risk Findings : 3
+Low Risk Findings    : 2
+Info Findings        : 8
+
+Audit Engine Version : 3.2-Enhanced with GenVM-Lint Alignment
+========================================
+
+========================================
+HIGH RISK (GenVM Lint Violation)
+
+Issue:
+Forbidden Import (os)
+
+Explanation:
+The contract imports 'os', which is strictly forbidden in the GenLayer VM environment.
+
+Impact:
+Contract compilation or deployment will fail.
+
+Recommendation:
+Remove 'import os' or related statements.
+========================================
+
+========================================
+HIGH RISK (GenVM Lint Violation)
+
+Issue:
+Forbidden Import (random)
+
+Explanation:
+The contract imports 'random', which is strictly forbidden in the GenLayer VM environment.
+
+Impact:
+Contract compilation or deployment will fail.
+
+Recommendation:
+Remove 'import random' or related statements.
+========================================
+
+========================================
+MEDIUM RISK (GenVM Lint Violation)
+
+Issue:
+Forbidden Data Structure in Active State
+
+Explanation:
+Standard Python dict or list structures were detected.
+
+Impact:
+GenLayer requires specialized storage types like TreeMap or DynArray for state management.
+
+Recommendation:
+Replace standard dictionaries or lists with GenLayer-compatible state collections.
+========================================
+
+========================================
+INFO
+
+Issue:
+Runtime Dependency
+
+Explanation:
+The contract relies on a specific runtime dependency package.
+
+Impact:
+Runtime upgrades, compatibility changes, or dependency updates may affect contract behaviour and execution.
+
+Recommendation:
+Review dependency requirements and verify contract compatibility after runtime upgrades.
+========================================
+
+========================================
+INFO
+
+Issue:
+Cross Contract Call
+
+Explanation:
+The contract interacts with another contract or external on-chain target.
+
+Impact:
+Execution results may depend on the behaviour and availability of external contracts.
+
+Recommendation:
+Validate external responses and handle unexpected failures safely.
+========================================
+
+========================================
+INFO
+
+Issue:
+Nondeterministic Execution
+
+Explanation:
+The contract uses nondeterministic execution mechanisms.
+
+Impact:
+Validators may receive different inputs or produce varying execution results.
+
+Recommendation:
+Validate nondeterministic outputs and avoid using them as the sole basis for critical business decisions.
+========================================
+
+========================================
+LOW RISK
+
+Issue:
+Timestamp Dependency
+
+Explanation:
+The contract relies on the current timestamp during execution.
+
+Impact:
+Time based logic may behave differently depending on when the contract is executed.
+
+Recommendation:
+Avoid using timestamps as the only factor for critical decisions.
+========================================
+
+========================================
+LOW RISK
+
+Issue:
+Transaction Time Dependency
+
+Explanation:
+The contract relies on transaction creation time.
+
+Impact:
+Contract behaviour may vary depending on when a transaction was created.
+
+Recommendation:
+Avoid relying exclusively on transaction time for critical business logic.
+========================================
+
+========================================
+MEDIUM RISK
+
+Issue:
+Unbounded Storage Growth
+
+Explanation:
+A storage variable appears to grow continuously without limits.
+
+Impact:
+Contract storage may increase over time, resulting in higher storage costs and reduced efficiency.
+
+Recommendation:
+Implement limits, pruning mechanisms, or cleanup routines to control storage growth.
+========================================
+
+========================================
+INFO
+
+Issue:
+External Web Access (GET)
+
+Explanation:
+The contract retrieves information from an external website.
+
+Impact:
+Contract behaviour may depend on third party data sources outside blockchain control.
+
+Recommendation:
+Validate and verify external data before using it in critical logic.
+========================================
+
+========================================
+INFO
+
+Issue:
+External Web Access (RENDER)
+
+Explanation:
+The contract renders external web content before processing it.
+
+Impact:
+Website changes may affect the behaviour and output of the contract.
+
+Recommendation:
+Use trusted sources and validate all retrieved content.
+========================================
+
+========================================
+INFO
+
+Issue:
+LLM Usage Detected
+
+Explanation:
+The contract uses a Large Language Model.
+
+Impact:
+Outputs may vary depending on prompts,
+model versions and execution context.
+
+Recommendation:
+Validate AI generated responses before
+using them in important decisions.
+========================================
+
+========================================
+INFO
+
+Issue:
+Prompt Execution Detected
+
+Explanation:
+The contract sends prompts to an AI model.
+
+Impact:
+Different prompts may produce different
+results and behaviours.
+
+Recommendation:
+Review prompts regularly and validate
+generated outputs.
+========================================
+
+========================================
+INFO
+
+Issue:
+LLM Interaction Detected
+
+Explanation:
+The contract interacts with a language model.
+
+Impact:
+Responses may vary depending on context,
+model behaviour and prompt design.
+
+Recommendation:
+Do not rely solely on AI output without
+additional validation.
+========================================
+
+========================================
+MEDIUM RISK
+
+Issue:
+Excessive LLM Dependence
+
+Explanation:
+The contract relies heavily on AI generated outputs.
+
+Impact:
+Business logic may become difficult to audit,
+predict, and reproduce consistently.
+
+Recommendation:
+Reduce AI involvement in critical state-changing
+operations and validate AI responses.
+
+AI Usage Count:
+7
+========================================
+
+DEBUG SEC011
+external=True
+validation=True
+decision=True
+state=True
+"""
+
+PREDICTION VS ACTUAL
+- Score: predicted 0; actual 0 — exact match.
+- Risk: predicted HIGH; actual HIGH — exact match.
+- Findings: predicted 13; actual 15 — underpredicted by 2.
+- HIGH: predicted 2; actual 2 — exact match.
+- MEDIUM: predicted 3; actual 3 — exact match.
+- LOW: predicted 2; actual 2 — exact match.
+- INFO: predicted 6; actual 8 — underpredicted by 2.
+- SEC011 emitted no finding, consistent with prediction. Debug flags were
+  external=True, validation=True, decision=True, state=True. The validation
+  marker suppresses the composite SEC011 finding under the scanner's
+  documented heuristic.
+
+ANALYSIS
+The signature-like strings inside the inert triple-quoted string triggered
+multiple scanner findings. In particular, the report includes forbidden
+imports, forbidden data structures, cross-contract and nondeterministic
+execution markers, timestamp markers, storage-growth marker, web access
+markers, and LLM-related markers, despite those decoy strings being data
+rather than executable statements in this target.
+
+The two additional INFO findings missed in the pre-test prediction were
+Prompt Execution Detected and LLM Interaction Detected. The source contained
+`exec_prompt(` and `llm_call` in the decoy string. The scanner's SEC009
+checks these markers independently, in addition to the `gl.nondet.llm`
+marker that produced LLM Usage Detected. The source also contained five
+`gl.nondet.llm` marker occurrences, one `exec_prompt(` occurrence, and one
+`llm_call` occurrence, matching the reported AI Usage Count of 7.
+
+The score reached zero, so the score itself is saturated and cannot express
+how many additional patterns were falsely recognized. The report demonstrates
+lexical-context contamination in this test. It does not prove that every
+reported category is a real runtime vulnerability; the inert-string placement
+is the key experimental control.
+
+RESEARCH ASSESSMENT
+FAIL — lexical context is not distinguished adequately by the scanner's
+substring-based checks. Text in an inert multiline string was treated as
+security-relevant source patterns. Prediction was exact for score, risk, and
+severity counts HIGH/MEDIUM/LOW, but missed two independent INFO findings.
+
+EVIDENCE CLASSIFICATION
+- Directly observed: the submitted source contains decoy markers only inside
+  the multiline string, and the scanner report contains corresponding
+  findings for those marker families.
+- Strongly supported interpretation: scanner checks are lexical substring
+  checks without adequate comment/string-literal exclusion for these rules.
+- Not established: runtime execution of the decoy APIs, actual exploitability,
+  or that the scanner's underlying implementation has no other parsing layer.
+
+CASE-028 RESULT
+Score: 0
+Risk: HIGH
+Findings: 15 (HIGH 2, MEDIUM 3, LOW 2, INFO 8)
+Research assessment: FAIL (LEXICAL CONTEXT CONTAMINATION)
+
+UPDATED CUMULATIVE SCORE SNAPSHOT — CASE-001 TO CASE-028
+
+Case count       : 28
+Average score    : 51.43
+Median score     : 60
+Minimum score    : 0
+Maximum score    : 100
+
+Risk distribution by scanner score:
+HIGH   (<50)     : 6 cases
+MEDIUM (50-79)   : 18 cases
+LOW    (80-100)  : 4 cases
+
+Statistics recalculated from the 28 recorded case scores. These are
+statistics of scanner outputs, not measurements of scanner accuracy,
+precision, recall, or security.
+
+NEXT RESEARCH DIRECTION
+Begin a paired lexical-context control: retain identical marker strings but
+move them between executable code and inert comments/string literals, while
+changing no other relevant source content. Compare finding-by-finding output
+to isolate comment handling from string-literal handling. Do not infer
+comment behavior solely from this triple-quoted-string test.
+
+END OF ADDENDUM — CASE-028
+######################################################################
+
+######################################################################
+CASE-029-A — LEXICAL CONTEXT ISOLATION: ACTIVE CODE CONTROL
+######################################################################
+
+TEST OBJECTIVE
+Establish a positive control for the marker `gl.nondet.llm` in executable
+code before moving the same marker into comments, docstrings, and string
+literals in paired subtests. The purpose is to determine whether scanner
+recognition changes with lexical context.
+
+TARGET SOURCE
+```python
+# { "Depends": "py-genlayer:case-029-A" }
+
+import genlayer as gl
+
+
+class LexicalIsolationProbe(gl.Contract):
+
+    owner: str
+    status: str
+
+    def __init__(self):
+        self.owner = "INITIAL_OWNER"
+        self.status = "IDLE"
+
+    @gl.public.write
+    def execute(self, caller: str):
+
+        if caller != self.owner:
+            raise Exception("Unauthorized")
+
+        result = gl.nondet.llm(
+            lambda: "APPROVE"
+        )
+
+        self.status = str(result)
+
+    @gl.public.view
+    def get_status(self):
+        return self.status
+```
+
+PRE-TEST PREDICTION
+- Security Score: 100
+- Risk Level: LOW
+- Total Findings: 2
+- HIGH: 0; MEDIUM: 0; LOW: 0; INFO: 2
+- Expected INFO findings: Runtime Dependency and LLM Usage Detected.
+- Expected SEC011 debug flags: external=True, validation=True,
+  decision=True, state=True.
+
+RAW ACTUAL REPORT
+"""
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 100
+Risk Level     : LOW
+Total Findings : 2
+========================================
+
+========================================
+EXECUTIVE SUMMARY
+========================================
+
+High Risk Findings   : 0
+Medium Risk Findings : 0
+Low Risk Findings    : 0
+Info Findings        : 2
+
+Audit Engine Version : 3.2-Enhanced with GenVM-Lint Alignment
+========================================
+
+========================================
+INFO
+
+Issue:
+Runtime Dependency
+
+Explanation:
+The contract relies on a specific runtime dependency package.
+
+Impact:
+Runtime upgrades, compatibility changes, or dependency updates may affect contract behaviour and execution.
+
+Recommendation:
+Review dependency requirements and verify contract compatibility after runtime upgrades.
+========================================
+
+========================================
+INFO
+
+Issue:
+LLM Usage Detected
+
+Explanation:
+The contract uses a Large Language Model.
+
+Impact:
+Outputs may vary depending on prompts,
+model versions and execution context.
+
+Recommendation:
+Validate AI generated responses before
+using them in important decisions.
+========================================
+
+DEBUG SEC011
+external=True
+validation=True
+decision=True
+state=True
+"""
+
+PREDICTION VS ACTUAL
+- Score: predicted 100; actual 100 — exact match.
+- Risk: predicted LOW; actual LOW — exact match.
+- Findings: predicted 2; actual 2 — exact match.
+- Severity distribution: predicted INFO 2; actual INFO 2 — exact match.
+- Runtime Dependency and LLM Usage Detected both appeared as predicted.
+- SEC011 debug flags all matched prediction.
+
+ANALYSIS
+The marker `gl.nondet.llm` was present in an executable call expression and
+the scanner emitted LLM Usage Detected. This establishes the positive-control
+condition: the scanner recognizes this marker in active source code.
+The baseline runtime dependency finding is associated with the Depends
+metadata comment. The access-control guard and state update are present in
+the target source; SEC011 debug flags were all true.
+
+This case alone does not establish whether the scanner distinguishes active
+code from comments, docstrings, or string literals. The paired subtests must
+retain the same marker and surrounding control structure while changing only
+the marker's lexical location. Also, SEC011's validation=True is a heuristic
+flag, not proof that the LLM response is semantically or safely validated.
+
+RESEARCH ASSESSMENT
+PASS — positive-control expectation met. This is not a weakness finding;
+it is the reference condition for CASE-029-B through CASE-029-D.
+
+CASE-029-A RESULT
+Score: 100
+Risk: LOW
+Findings: 2 (HIGH 0, MEDIUM 0, LOW 0, INFO 2)
+Prediction: exact match.
+Research assessment: PASS (ACTIVE-CODE POSITIVE CONTROL)
+
+NEXT SUBTEST
+CASE-029-B — move the sole `gl.nondet.llm` marker into a comment. Keep the
+Depends metadata, import, class/state layout, access-control guard, and
+remaining control flow otherwise equivalent. Record whether LLM Usage
+Detected still appears. Do not treat the prediction as an actual result.
+
+END OF ADDENDUM — CASE-029-A
+######################################################################
+
+######################################################################
+CASE-029-B — COMMENT CONTEXT CONTROL
+######################################################################
+
+OBJECTIVE
+Determine whether the scanner recognizes the `gl.nondet.llm` marker when it
+appears only in a Python comment, rather than in an executable call expression.
+This is paired with CASE-029-A, the active-code positive control.
+
+TARGET SOURCE
+
+# { "Depends": "py-genlayer:case-029-B" }
+
+import genlayer as gl
+
+
+class LexicalIsolationProbe(gl.Contract):
+
+    owner: str
+    status: str
+
+    def __init__(self):
+        self.owner = "INITIAL_OWNER"
+        self.status = "IDLE"
+
+    @gl.public.write
+    def execute(self, caller: str):
+
+        if caller != self.owner:
+            raise Exception("Unauthorized")
+
+        # gl.nondet.llm
+
+        self.status = "EXECUTED"
+
+    @gl.public.view
+    def get_status(self):
+        return self.status
+
+PREDICTION BEFORE EXECUTION
+- Security Score: 100
+- Risk Level: LOW
+- Total Findings: 2
+- Severity: HIGH 0, MEDIUM 0, LOW 0, INFO 2
+- Findings: Runtime Dependency (INFO); LLM Usage Detected (INFO)
+- SEC011: external=True, validation=True, decision=True, state=True
+
+RAW ACTUAL REPORT (AS PROVIDED)
+
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 100
+Risk Level     : LOW
+Total Findings : 2
+========================================
+
+========================================
+EXECUTIVE SUMMARY
+========================================
+
+High Risk Findings   : 0
+Medium Risk Findings : 0
+Low Risk Findings    : 0
+Info Findings        : 2
+
+Audit Engine Version : 3.2-Enhanced with GenVM-Lint Alignment
+========================================
+
+========================================
+INFO
+
+Issue:
+Runtime Dependency
+
+Explanation:
+The contract relies on a specific runtime dependency package.
+
+Impact:
+Runtime upgrades, compatibility changes, or dependency updates may affect contract behaviour and execution.
+
+Recommendation:
+Review dependency requirements and verify contract compatibility after runtime upgrades.
+========================================
+
+========================================
+INFO
+
+Issue:
+LLM Usage Detected
+
+Explanation:
+The contract uses a Large Language Model.
+
+Impact:
+Outputs may vary depending on prompts,
+model versions and execution context.
+
+Recommendation:
+Validate AI generated responses before
+using them in important decisions.
+========================================
+
+DEBUG SEC011
+external=True
+validation=True
+decision=True
+state=True
+
+PREDICTION VS ACTUAL
+- Score: predicted 100; actual 100 — exact match.
+- Risk: predicted LOW; actual LOW — exact match.
+- Findings: predicted 2; actual 2 — exact match.
+- Severity distribution: predicted INFO 2; actual INFO 2 — exact match.
+- Runtime Dependency and LLM Usage Detected both appeared as predicted.
+- All SEC011 debug flags matched prediction.
+
+ANALYSIS
+The sole `gl.nondet.llm` marker in this target appears in a comment, not in
+an executable call expression. Nevertheless, the scanner emitted LLM Usage
+Detected and set SEC011 external=True. Compared with CASE-029-A, the lexical
+location of the marker changed from active code to a comment, while the
+reported findings and score remained identical.
+
+This is direct evidence that the relevant scanner marker checks include
+comment text and do not distinguish this comment occurrence from an active
+API call. It supports a false-positive risk for this specific marker rule.
+It does not by itself prove that every scanner rule treats every comment in
+the same way, nor that the scanner parses no syntax anywhere.
+
+SEC011 validation=True remains a coarse debug flag. It is not evidence that
+an LLM result was validated; in this target there is no LLM invocation.
+The flag appears to be influenced by generic source markers such as the
+access-control exception/guard pattern, consistent with the known whole-file
+substring heuristic.
+
+RESEARCH ASSESSMENT
+FAIL — COMMENT MARKER FALSE POSITIVE (LLM USAGE DETECTED)
+
+Evidence strength: HIGH for the specific `gl.nondet.llm` substring rule,
+because the controlled pair CASE-029-A / CASE-029-B differs in marker
+location and the comment-only case still triggers the finding.
+Scope limitation: one marker and one comment placement have been tested.
+
+CASE-029-B RESULT
+Score: 100
+Risk: LOW
+Findings: 2 (HIGH 0, MEDIUM 0, LOW 0, INFO 2)
+Prediction: exact match.
+Observed weakness: comment text is included in LLM marker detection.
+
+NEXT SUBTEST
+CASE-029-C — move the sole `gl.nondet.llm` marker into a docstring. Preserve
+the Depends metadata and comparable control structure. Record the complete
+raw report and debug flags. Do not infer the docstring result from CASE-029-B.
+
+END OF ADDENDUM — CASE-029-B
+######################################################################
+
+
+######################################################################
+CASE-029-C — DOCSTRING CONTEXT
+######################################################################
+
+TEST OBJECTIVE
+Determine whether the `gl.nondet.llm` marker is detected when it appears
+only inside a Python function docstring rather than as an executable API call.
+
+TARGET SOURCE
+```python
+# { "Depends": "py-genlayer:case-029-C" }
+
+import genlayer as gl
+
+
+class LexicalIsolationProbe:
+
+    owner: str
+    status: str
+
+    def __init__(self):
+        self.owner = "INITIAL_OWNER"
+        self.status = "IDLE"
+
+    @gl.public.write
+    def execute(self, caller: str):
+        """
+        gl.nondet.llm
+        """
+
+        if caller != self.owner:
+            raise Exception("Unauthorized")
+
+        self.status = "EXECUTED"
+
+    @gl.public.view
+    def get_status(self):
+        return self.status
+```
+
+RAW ACTUAL REPORT (as supplied)
+```text
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 100
+Risk Level     : LOW
+Total Findings : 2
+========================================
+
+========================================
+EXECUTIVE SUMMARY
+========================================
+
+High Risk Findings   : 0
+Medium Risk Findings : 0
+Low Risk Findings    : 0
+Info Findings        : 2
+
+Audit Engine Version : 3.2-Enhanced with GenVM-Lint Alignment
+========================================
+
+========================================
+INFO
+
+Issue:
+Runtime Dependency
+
+Explanation:
+The contract relies on a specific runtime dependency package.
+
+Impact:
+Runtime upgrades, compatibility changes, or dependency updates may affect contract behaviour and execution.
+
+Recommendation:
+Review dependency requirements and verify contract compatibility after runtime upgrades.
+========================================
+
+========================================
+INFO
+
+Issue:
+LLM Usage Detected
+
+Explanation:
+The contract uses a Large Language Model.
+
+Impact:
+Outputs may vary depending on prompts,
+model versions and execution context.
+
+Recommendation:
+Validate AI generated responses before
+using them in important decisions.
+========================================
+
+DEBUG SEC011
+external=True
+validation=True
+decision=True
+state=True
+```
+
+PREDICTION VS ACTUAL
+- Score: predicted 100; actual 100 — exact match.
+- Risk: predicted LOW; actual LOW — exact match.
+- Findings: predicted 2; actual 2 — exact match.
+- Severity distribution: INFO 2 — exact match.
+- Runtime Dependency and LLM Usage Detected appeared as predicted.
+- All SEC011 debug flags matched prediction.
+
+ANALYSIS
+The only `gl.nondet.llm` marker in the target appears inside the function
+docstring. The scanner nevertheless emitted LLM Usage Detected and reported
+SEC011 external=True. Compared with CASE-029-A, where the same marker was an
+active API call, and CASE-029-B, where it was in a comment, the docstring
+placement produces the same reported findings and score.
+
+This is direct evidence that the LLM marker check includes docstring text
+and does not distinguish this docstring occurrence from an active API call.
+It strengthens the lexical-context false-positive finding for this marker.
+It does not prove that every rule or every Python lexical construct behaves
+identically.
+
+SEC011 validation=True is only a coarse source-wide debug flag. It does not
+show that an LLM response was validated; there is no LLM invocation in the
+executable body of this target. The flag is consistent with the generic
+validation marker present in the owner guard / exception code.
+
+RESEARCH ASSESSMENT
+FAIL — DOCSTRING MARKER FALSE POSITIVE (LLM USAGE DETECTED)
+
+Evidence strength: HIGH for the specific `gl.nondet.llm` substring rule,
+supported by the controlled comparison across active code (029-A), comment
+(029-B), and docstring (029-C).
+Scope limitation: one marker and one docstring placement have been tested.
+
+CASE-029-C RESULT
+Score: 100
+Risk: LOW
+Findings: 2 (HIGH 0, MEDIUM 0, LOW 0, INFO 2)
+Prediction: exact match.
+Observed weakness: docstring text is included in LLM marker detection.
+
+NEXT SUBTEST
+CASE-029-D — place the sole `gl.nondet.llm` marker inside an ordinary string
+literal assigned to a local variable, without invoking it. Preserve the
+Depends metadata and comparable access-control / state structure.
+Record the complete raw report and debug flags before finalizing CASE-029.
+
+END OF ADDENDUM — CASE-029-C
+######################################################################
+
+######################################################################
+ADDENDUM — CASE-029-D
+CASE-029-D — STRING LITERAL CONTEXT
+######################################################################
+
+TEST OBJECTIVE
+Determine whether the scanner reports LLM usage when the marker
+`gl.nondet.llm` appears only as ordinary string-literal content assigned to
+a local variable, with no LLM API invocation.
+
+PRE-RUN PREDICTION (RECORDED BEFORE EXECUTION)
+- Security Score: 100
+- Risk Level: LOW
+- Total Findings: 2
+- Findings: Runtime Dependency (INFO); LLM Usage Detected (INFO)
+- SEC011 debug flags: external=True, validation=True, decision=True, state=True
+- Rationale: the scanner's source-wide substring checks were expected to
+  match the marker inside the string literal.
+
+TARGET SOURCE CODE
+
+# { "Depends": "py-genlayer:case-029-D" }
+
+import genlayer as gl
+
+
+class LexicalIsolationProbe(gl.Contract):
+
+    owner: str
+    status: str
+
+    def __init__(self):
+        self.owner = "INITIAL_OWNER"
+        self.status = "IDLE"
+
+    @gl.public.write
+    def execute(self, caller: str):
+
+        if caller != self.owner:
+            raise Exception("Unauthorized")
+
+        marker = "gl.nondet.llm"
+
+        self.status = "EXECUTED"
+
+    @gl.public.view
+    def get_status(self):
+        return self.status
+
+
+ACTUAL RAW REPORT (AS PROVIDED BY USER)
+
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 100
+Risk Level     : LOW
+Total Findings : 2
+========================================
+
+========================================
+EXECUTIVE SUMMARY
+========================================
+
+High Risk Findings   : 0
+Medium Risk Findings : 0
+Low Risk Findings    : 0
+Info Findings        : 2
+
+Audit Engine Version : 3.2-Enhanced with GenVM-Lint Alignment
+========================================
+
+========================================
+INFO
+
+Issue:
+Runtime Dependency
+
+Explanation:
+The contract relies on a specific runtime dependency package.
+
+Impact:
+Runtime upgrades, compatibility changes, or dependency updates may affect contract behaviour and execution.
+
+Recommendation:
+Review dependency requirements and verify contract compatibility after runtime upgrades.
+========================================
+
+========================================
+INFO
+
+Issue:
+LLM Usage Detected
+
+Explanation:
+The contract uses a Large Language Model.
+
+Impact:
+Outputs may vary depending on prompts,
+model versions and execution context.
+
+Recommendation:
+Validate AI generated responses before
+using them in important decisions.
+========================================
+
+========================================
+DEBUG SEC011
+external=True
+validation=True
+decision=True
+state=True
+
+
+PREDICTION VS ACTUAL
+- Security Score: predicted 100; actual 100 — MATCH.
+- Risk Level: predicted LOW; actual LOW — MATCH.
+- Total Findings: predicted 2; actual 2 — MATCH.
+- Finding categories: predicted 2 INFO findings; actual 2 INFO findings — MATCH.
+- SEC011 flags: all four predicted True; all four actual True — MATCH.
+
+TECHNICAL ANALYSIS
+The sole `gl.nondet.llm` marker in the test source is contained in the
+ordinary string literal assigned to `marker`. The source does not invoke
+`gl.nondet.llm` or any other LLM function. Nevertheless, the scanner emits
+`LLM Usage Detected` and sets SEC011 `external=True`.
+
+This is direct evidence that, for this marker, the scanner's detection is
+lexical/source-wide rather than a verification of an actual API invocation.
+The result extends the observed lexical-context contamination pattern to
+ordinary string literals. Together with CASE-029-B (comment) and
+CASE-029-C (docstring), it indicates that the scanner does not distinguish
+these lexical contexts when matching this marker.
+
+The `validation=True` debug flag must not be interpreted as proof that an
+external or LLM response was validated. It reflects the scanner's generic
+source-wide validation-marker heuristic; the presence of a generic marker
+does not establish semantic validation of any response.
+
+EVIDENCE STRENGTH AND LIMITATIONS
+- Strong evidence for a false-positive LLM marker detection in this exact
+  ordinary-string-literal test.
+- Strong evidence that this source-level marker check does not require an
+  actual LLM invocation to emit the finding.
+- This test does not establish that every marker or every lexical context
+  is handled identically; conclusions are limited to the tested marker and
+  source structure.
+- CASE-029-C used `class LexicalIsolationProbe:` rather than
+  `class LexicalIsolationProbe(gl.Contract):`. Its docstring result remains
+  an observed scanner output, but a strict controlled comparison would
+  benefit from rerunning C with the same class declaration as A, B, and D.
+- The scanner report alone does not establish runtime validity or execution
+  behavior of the submitted contract.
+
+CASE-029 COMPARATIVE SUMMARY (CURRENT OBSERVATIONS)
+
+Subtest | Marker context | LLM finding | SEC011 external | Prediction
+A       | Active code     | Yes          | True            | Exact match
+B       | Comment         | Yes          | True            | Exact match
+C       | Docstring       | Yes          | True            | Exact match
+D       | String literal  | Yes          | True            | Exact match
+
+CONCLUSION
+CASE-029-D confirms the predicted outcome. The tested LLM marker is detected
+when it appears only inside an ordinary string literal, without an API
+invocation. In combination with CASE-029-B and CASE-029-C, this strengthens
+the finding that SecurityInspector v3.2's relevant source-wide marker
+checks are not lexically context-aware. The strongest controlled evidence
+is from A, B, and D, which share the same `gl.Contract` class declaration;
+CASE-029-C should be rerun with that declaration for a fully matched
+four-context comparison.
+
+END OF ADDENDUM — CASE-029-D
+######################################################################
+
+######################################################################
+ADDENDUM — CASE-029-C-STRICT
+######################################################################
+
+CASE ID:
+CASE-029-C-STRICT
+
+TITLE:
+DOCSTRING CONTEXT — STRICT CONTROL RE-RUN
+
+RESEARCH OBJECTIVE:
+Repeat CASE-029-C with the same class inheritance declaration used in
+CASE-029-A, CASE-029-B, and CASE-029-D. The only intended location of the
+marker `gl.nondet.llm` is inside the method docstring. This removes the
+previous class-declaration mismatch as a control-variable concern.
+
+TARGET SOURCE CODE:
+
+```python
+# { "Depends": "py-genlayer:case-029-C-STRICT" }
+
+import genlayer as gl
+
+
+class LexicalIsolationProbe(gl.Contract):
+
+    owner: str
+    status: str
+
+    def __init__(self):
+        self.owner = "INITIAL_OWNER"
+        self.status = "IDLE"
+
+    @gl.public.write
+    def execute(self, caller: str):
+        """
+        gl.nondet.llm
+        """
+
+        if caller != self.owner:
+            raise Exception("Unauthorized")
+
+        self.status = "EXECUTED"
+
+    @gl.public.view
+    def get_status(self):
+        return self.status
+```
+
+PRE-RUN PREDICTION:
+- Security Score: 100
+- Risk Level: LOW
+- Total Findings: 2
+- Runtime Dependency: INFO
+- LLM Usage Detected: INFO
+- SEC011 external=True
+- SEC011 validation=True
+- SEC011 decision=True
+- SEC011 state=True
+
+ACTUAL RAW REPORT:
+
+========================================
+GENLAYER SECURITY REPORT
+
+Security Score : 100
+Risk Level     : LOW
+Total Findings : 2
+========================================
+
+========================================
+EXECUTIVE SUMMARY
+========================================
+
+High Risk Findings   : 0
+Medium Risk Findings : 0
+Low Risk Findings    : 0
+Info Findings        : 2
+
+Audit Engine Version : 3.2-Enhanced with GenVM-Lint Alignment
+========================================
+
+========================================
+INFO
+
+Issue:
+Runtime Dependency
+
+Explanation:
+The contract relies on a specific runtime dependency package.
+
+Impact:
+Runtime upgrades, compatibility changes, or dependency updates may affect contract behaviour and execution.
+
+Recommendation:
+Review dependency requirements and verify contract compatibility after runtime upgrades.
+========================================
+
+========================================
+INFO
+
+Issue:
+LLM Usage Detected
+
+Explanation:
+The contract uses a Large Language Model.
+
+Impact:
+Outputs may vary depending on prompts,
+model versions and execution context.
+
+Recommendation:
+Validate AI generated responses before
+using them in important decisions.
+========================================
+
+DEBUG SEC011
+external=True
+validation=True
+decision=True
+state=True
+
+PREDICTION VERSUS ACTUAL:
+Prediction matched actual for all recorded report fields:
+- Score 100: matched.
+- Risk LOW: matched.
+- Two findings: matched.
+- Runtime Dependency INFO: matched.
+- LLM Usage Detected INFO: matched.
+- All four SEC011 debug flags: matched.
+
+TECHNICAL ANALYSIS:
+The marker `gl.nondet.llm` appears only inside the method docstring. No
+LLM API invocation is present in executable code. Nevertheless, the
+scanner emits `LLM Usage Detected` and sets SEC011 `external=True`.
+
+This strict-control rerun uses `class LexicalIsolationProbe(gl.Contract)`,
+matching the class declaration in CASE-029-A, CASE-029-B, and CASE-029-D.
+It therefore removes the previously noted class-inheritance mismatch
+from the four-context comparison. The result supports the conclusion
+that the scanner's relevant source-wide marker checks do not distinguish
+this docstring occurrence from an active-code occurrence.
+
+SEC011 `validation=True` must not be interpreted as proof that an external
+response was validated. The contract contains a generic `raise Exception`
+access-control branch, which is sufficient to satisfy the scanner's
+source-wide validation-marker check. It does not validate an LLM response.
+
+EVIDENCE STRENGTH:
+Strong for the narrow claim that the exact marker `gl.nondet.llm` inside a
+method docstring triggers the observed LLM finding and SEC011 external
+flag under this test setup. The matched class declaration strengthens
+comparability with CASE-029-A, B, and D.
+
+LIMITATIONS:
+- This is a source-pattern scanner observation, not a GenVM runtime test.
+- It does not prove that every docstring or every marker behaves identically.
+- It does not establish runtime exploitability or impact on deployed
+  contracts.
+- The report output alone does not establish which internal line caused
+  each finding; the scanner source's known substring checks provide the
+  mechanism-level explanation.
+
+UPDATED CASE-029 CONTROLLED COMPARISON:
+- CASE-029-A — Active code: marker detected.
+- CASE-029-B — Comment: marker detected.
+- CASE-029-C-STRICT — Docstring: marker detected.
+- CASE-029-D — String literal: marker detected.
+
+CONCLUSION:
+The four matched-context tests show that the exact `gl.nondet.llm` marker
+is detected in active code, a comment, a docstring, and a string literal.
+This is strong evidence of lexical-context contamination in the scanner's
+source-wide LLM marker detection. The finding indicates textual marker
+presence, not necessarily actual LLM API usage. The SEC011 `external` flag
+is likewise triggered by the marker's textual presence in these tests.
+
+END OF ADDENDUM — CASE-029-C-STRICT
+######################################################################
+
+
+######################################################################
+CONSOLIDATED RESEARCH STATUS & WEAKNESS MAP — CASE-001 TO CASE-029-C-STRICT
+######################################################################
+
+BASELINE
+- Target: SecurityInspector v3.2-Enhanced with GenVM-Lint Alignment.
+- Scanner baseline remains frozen; no scanner code was modified.
+- This is a read-only source auditor. Its write method changes its own
+  report state, not the target contract.
+- Evidence in this journal establishes scanner output behavior on tested
+  source samples. It does not by itself establish target-contract runtime
+  exploitability or GenVM support for every tested construct.
+
+CONFIRMED WEAKNESS CLUSTERS
+
+SI-WR-01 — LEXICAL-CONTEXT CONTAMINATION (FALSE POSITIVES)
+Evidence: CASE-024, CASE-028, CASE-029-A, CASE-029-B,
+CASE-029-C-STRICT, CASE-029-D.
+The same marker `gl.nondet.llm` was detected in executable code (A), a
+comment (B), a docstring (C-STRICT), and an ordinary string literal (D).
+The A case is the positive control; B, C-STRICT, and D show detections
+without an executable LLM call. CASE-028 supplies broader multiline-string
+evidence for multiple marker families. CASE-024 contains mixed decoy-comment
+evidence and is less isolated.
+Confidence: HIGH for the tested `gl.nondet.llm` marker and four matched
+contexts; broader generalization to every scanner rule or Python lexical
+construct remains unproven.
+
+SI-WR-02 — DYNAMIC API RESOLUTION EVASION (FALSE NEGATIVES)
+Evidence: CASE-024, CASE-026, CASE-027.
+Direct dotted API signatures were hidden behind `getattr()` resolution;
+CASE-027 additionally assembled attribute names from string fragments.
+The scanner failed to recognize the tested direct API families and SEC011
+reported external=False in CASE-026 and CASE-027.
+Confidence: HIGH for source-level evasion of the tested lexical signatures.
+Runtime execution/support in GenVM remains unverified.
+
+SI-WR-03 — SEC011 GENERIC-VALIDATION SUPPRESSION (FALSE NEGATIVES /
+FALSE ASSURANCE)
+Primary evidence: CASE-022, CASE-023.
+Supporting evidence: CASE-028 and CASE-029-B, CASE-029-C-STRICT,
+CASE-029-D.
+Generic source-wide tokens such as `assert`, `raise Exception`, or other
+validation-like markers can set validation=True without proving that the
+specific external response is validated. CASE-022 and CASE-023 show the
+strongest response-flow examples. CASE-028 and CASE-029 show that an
+unrelated owner-check exception marker can coexist with external=True and
+validation=True, suppressing SEC011 even though the exception is not
+response validation.
+Confidence: HIGH that generic tokens satisfy the scanner's validation gate;
+MEDIUM for the prevalence and practical impact across arbitrary contracts.
+
+ADDITIONAL OBSERVATIONS — NOT REGISTERED AS SEPARATE CONFIRMED WEAKNESSES
+
+1. SCORE-FLOOR SATURATION
+CASE-001 and CASE-025 reached score 0; CASE-019 reached score 5. Once the
+score reaches its floor, additional penalties cannot be distinguished by
+the numeric score. CASE-025 also produced 15 findings while remaining at 0.
+This limits score granularity, but is not by itself proof of a detection bug.
+
+2. BUSINESS-INVARIANT COVERAGE GAP
+CASE-021 included business-level amount/balance invariants that were not
+reported as dedicated findings. The scanner's documented SEC001-SEC011
+checks do not claim comprehensive invariant verification. Treat this as a
+coverage boundary / research gap, not a confirmed defect unless the scanner
+claims to detect such invariants.
+
+3. SOURCE-WIDE HEURISTIC SCOPE
+The scanner uses lexical/source-wide checks rather than AST-based,
+per-function, control-flow, taint, or dataflow analysis. This architectural
+fact explains the three clusters above, but does not mean every individual
+rule necessarily fails in every context.
+
+CASE-029 CONTROLLED COMPARISON
+- A — active code: marker detected (positive control).
+- B — comment: marker detected (false positive for actual API use).
+- C-STRICT — docstring: marker detected (false positive for actual API use).
+- D — ordinary string literal: marker detected (false positive for actual API use).
+All four use the same `gl.Contract` class declaration and the same basic
+control structure. All produced Security Score 100, Risk LOW, two INFO
+findings (Runtime Dependency and LLM Usage Detected), and SEC011 flags
+external=True, validation=True, decision=True, state=True.
+
+RESEARCH INTERPRETATION RULE
+A reported finding is evidence that a scanner rule fired, not proof of a
+runtime vulnerability. An absent finding is not proof of safety. Keep
+static scanner behavior, semantic vulnerability, and runtime feasibility
+as separate claims.
+
+END OF CONSOLIDATED RESEARCH STATUS
+######################################################################
