@@ -1,0 +1,10 @@
+@gl.public.write
+def process_llm_decision(self, prompt: str):
+    response = gl.nondet.llm.exec_prompt(prompt)
+    
+    # Validasi permukaan: hanya mengecek apakah response tidak kosong
+    if response != "":
+        # Menggunakan data eksternal ke dalam logika state kritikal tanpa sanitasi semantik
+        self.user_tier = response
+    else:
+        self.user_tier = "GUEST"
