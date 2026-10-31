@@ -19,14 +19,7 @@ v3.2 with GenVM-Lint Alignment — the enhanced implementation incorporating Gen
 The expanded research dataset contains 32 test cases, documenting the evolution and behavior of both implementations.
 
 
-📂 Directory Contents
-
-File Name
-
-Description
-
-Key Focus
-
+📂 research-journal-v3.2
 
 GENLAYER SECURITYINSPECTOR ENGINE COMPREHENSIVE 20-CASE RESEARCH JOURNAL & AUDIT LOGS.TXT
 
