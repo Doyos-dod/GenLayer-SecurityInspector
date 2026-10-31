@@ -1,3 +1,3 @@
 In this release, I enhanced the SecurityInspector contract by adding two new security checks:
-SEC010 (Excessive LLM Dependence) and SEC011 (Unvalidated External Response).
+SEC010 (Excessive LLM Dependence), SEC011 (Unvalidated External Response) and GenVM-Lint Alignment .
 These additions improve the detection of AI-related risks and unvalidated external data usage.
